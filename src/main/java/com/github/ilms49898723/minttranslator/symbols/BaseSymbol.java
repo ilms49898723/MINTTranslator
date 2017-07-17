@@ -24,4 +24,28 @@ public class BaseSymbol {
     public SymbolType getSymbolType() {
         return mSymbolType;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+
+        BaseSymbol that = (BaseSymbol) o;
+
+        if (mIdentifier != null ? !mIdentifier.equals(that.mIdentifier) : that.mIdentifier != null) {
+            return false;
+        }
+        return mSymbolType == that.mSymbolType;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = mIdentifier != null ? mIdentifier.hashCode() : 0;
+        result = 31 * result + (mSymbolType != null ? mSymbolType.hashCode() : 0);
+        return result;
+    }
 }

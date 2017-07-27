@@ -8,6 +8,11 @@ import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+
 /**
  * Created by littlebird on 2017/07/16.
  */
@@ -31,12 +36,23 @@ public class Translator {
     }
 
     private void parseLFR(String filename) {
-        String input = "module Test(); assign b = a + c * (b~); endmodule";
-        LFRLexer lexer = new LFRLexer(CharStreams.fromString(input));
+        InputStream input = null;
+        try {
+            input = new FileInputStream("test.v");
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+        LFRLexer lexer = null;
+        try {
+            lexer = new LFRLexer(CharStreams.fromStream(input));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         CommonTokenStream tokens = new CommonTokenStream(lexer);
         LFRParser parser = new LFRParser(tokens);
         LFRParser.LfrContext context = parser.lfr();
         ParseTreeWalker walker = new ParseTreeWalker();
-        walker.walk(new LFRProcessor(), context);
+        LFRProcessor processor = new LFRProcessor(mSymbolTable, mConfiguration);
+        walker.walk(processor, context);
     }
 }

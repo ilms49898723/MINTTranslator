@@ -7,7 +7,6 @@ import com.github.ilms49898723.minttranslator.translator.Translator;
  */
 public class Main {
     public static void main(String[] args) {
-
         Translator translator = new Translator();
         translator.start("lfr", "test.json");
     }

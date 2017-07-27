@@ -21,19 +21,19 @@ verilog_stmt:
     ;
 
 flow_input_decl:
-    'finput' IDENTIFIER ';'
+    'finput' IDENTIFIER (',' IDENTIFIER)* ';'
     ;
 
 flow_output_decl:
-    'foutput' IDENTIFIER ';'
+    'foutput' IDENTIFIER (',' IDENTIFIER)* ';'
     ;
 
 control_input_decl:
-    'cinput' IDENTIFIER ';'
+    'cinput' IDENTIFIER (',' IDENTIFIER)* ';'
     ;
 
 channel_decl:
-    'fchannel' IDENTIFIER ';'
+    'fchannel' IDENTIFIER (',' IDENTIFIER)* ';'
     ;
 
 assign_stmt:

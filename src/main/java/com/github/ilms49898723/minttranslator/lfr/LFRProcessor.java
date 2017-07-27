@@ -2,6 +2,10 @@ package com.github.ilms49898723.minttranslator.lfr;
 
 import com.github.ilms49898723.minttranslator.antlr.LFRBaseListener;
 import com.github.ilms49898723.minttranslator.antlr.LFRParser;
+import com.github.ilms49898723.minttranslator.symbols.Component;
+import com.github.ilms49898723.minttranslator.translator.MINTConfiguration;
+import com.github.ilms49898723.minttranslator.translator.StatusCode;
+import com.github.ilms49898723.minttranslator.translator.SymbolTable;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ErrorNode;
 import org.antlr.v4.runtime.tree.TerminalNode;
@@ -10,65 +14,54 @@ import org.antlr.v4.runtime.tree.TerminalNode;
  * Created by littlebird on 2017/07/15.
  */
 public class LFRProcessor extends LFRBaseListener {
-    @Override
-    public void enterLfr(LFRParser.LfrContext ctx) {
-        super.enterLfr(ctx);
+    private StatusCode mFinalStatus;
+    private MINTConfiguration mConfiguration;
+    private SymbolTable mSymbolTable;
+
+    public LFRProcessor(SymbolTable symbolTable, MINTConfiguration configuration) {
+        mSymbolTable = symbolTable;
+        mConfiguration = configuration;
+        mFinalStatus = StatusCode.SUCCESS;
     }
 
-    @Override
-    public void exitLfr(LFRParser.LfrContext ctx) {
-        super.exitLfr(ctx);
+    public StatusCode getFinalStatus() {
+        return mFinalStatus;
     }
 
     @Override
     public void enterVerilog_modules(LFRParser.Verilog_modulesContext ctx) {
-        super.enterVerilog_modules(ctx);
         System.out.println("enter module with name " + ctx.IDENTIFIER().getText());
     }
 
     @Override
     public void exitVerilog_modules(LFRParser.Verilog_modulesContext ctx) {
-        super.exitVerilog_modules(ctx);
-    }
-
-    @Override
-    public void enterVerilog_stmts(LFRParser.Verilog_stmtsContext ctx) {
-        super.enterVerilog_stmts(ctx);
-    }
-
-    @Override
-    public void exitVerilog_stmts(LFRParser.Verilog_stmtsContext ctx) {
-        super.exitVerilog_stmts(ctx);
-    }
-
-    @Override
-    public void enterVerilog_stmt(LFRParser.Verilog_stmtContext ctx) {
-        super.enterVerilog_stmt(ctx);
-    }
-
-    @Override
-    public void exitVerilog_stmt(LFRParser.Verilog_stmtContext ctx) {
-        super.exitVerilog_stmt(ctx);
+        System.out.println("exit module " + ctx.IDENTIFIER().getText());
     }
 
     @Override
     public void enterFlow_input_decl(LFRParser.Flow_input_declContext ctx) {
-        super.enterFlow_input_decl(ctx);
-    }
-
-    @Override
-    public void exitFlow_input_decl(LFRParser.Flow_input_declContext ctx) {
-        super.exitFlow_input_decl(ctx);
+        for (TerminalNode node : ctx.IDENTIFIER()) {
+            String identifier = node.getText();
+            Component component = new Component(identifier);
+            StatusCode code = mSymbolTable.put(component);
+            if (code != StatusCode.SUCCESS) {
+                System.err.println("Error: " + identifier);
+                mFinalStatus = StatusCode.FAIL;
+            }
+        }
     }
 
     @Override
     public void enterFlow_output_decl(LFRParser.Flow_output_declContext ctx) {
-        super.enterFlow_output_decl(ctx);
-    }
-
-    @Override
-    public void exitFlow_output_decl(LFRParser.Flow_output_declContext ctx) {
-        super.exitFlow_output_decl(ctx);
+        for (TerminalNode node : ctx.IDENTIFIER()) {
+            String identifier = node.getText();
+            Component component = new Component(identifier);
+            StatusCode code = mSymbolTable.put(component);
+            if (code != StatusCode.SUCCESS) {
+                System.err.println("Error: " + identifier);
+                mFinalStatus = StatusCode.FAIL;
+            }
+        }
     }
 
     @Override

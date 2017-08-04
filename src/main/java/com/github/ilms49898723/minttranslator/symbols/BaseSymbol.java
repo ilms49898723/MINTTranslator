@@ -6,15 +6,12 @@ package com.github.ilms49898723.minttranslator.symbols;
 public class BaseSymbol {
     private String mIdentifier;
     private SymbolType mSymbolType;
+    private int mScope;
 
-    public BaseSymbol() {
-        mIdentifier = "";
-        mSymbolType = SymbolType.UNDEFINED;
-    }
-
-    public BaseSymbol(String identifier, SymbolType symbolType) {
+    public BaseSymbol(String identifier, SymbolType symbolType, int scope) {
         mIdentifier = identifier;
         mSymbolType = symbolType;
+        mScope = scope;
     }
 
     public String getIdentifier() {
@@ -23,6 +20,10 @@ public class BaseSymbol {
 
     public SymbolType getSymbolType() {
         return mSymbolType;
+    }
+
+    public int getScope() {
+        return mScope;
     }
 
     @Override

@@ -19,28 +19,39 @@ import java.io.InputStream;
 public class Translator {
     private MINTConfiguration mConfiguration;
     private SymbolTable mSymbolTable;
+    private MINTOutputWriter mWriter;
 
     public Translator() {
         mConfiguration = new MINTConfiguration();
         mSymbolTable = new SymbolTable();
     }
 
-    public void start(String lfr, String ucf) {
+    public void start(String lfr, String ucf, String output) {
+        mWriter = new MINTOutputWriter(output);
+        System.out.println(lfr);
+        System.out.println(ucf);
         parseUCF(ucf);
         parseLFR(lfr);
     }
 
     private void parseUCF(String filename) {
         UCFProcessor ucfProcessor = new UCFProcessor(filename, mSymbolTable, mConfiguration);
-        ucfProcessor.parse();
+        StatusCode status = ucfProcessor.parse();
+        if (status != StatusCode.SUCCESS) {
+            System.exit(1);
+        }
+
     }
 
     private void parseLFR(String filename) {
         InputStream input = null;
         try {
-            input = new FileInputStream("test.v");
+            input = new FileInputStream(filename);
         } catch (FileNotFoundException e) {
             e.printStackTrace();
+        }
+        if (input == null) {
+            System.exit(1);
         }
         LFRLexer lexer = null;
         try {
@@ -48,11 +59,18 @@ public class Translator {
         } catch (IOException e) {
             e.printStackTrace();
         }
+        if (lexer == null) {
+            System.exit(1);
+        }
+        System.out.println("st");
         CommonTokenStream tokens = new CommonTokenStream(lexer);
         LFRParser parser = new LFRParser(tokens);
         LFRParser.LfrContext context = parser.lfr();
         ParseTreeWalker walker = new ParseTreeWalker();
-        LFRProcessor processor = new LFRProcessor(mSymbolTable, mConfiguration);
+        LFRProcessor processor = new LFRProcessor(mSymbolTable, mConfiguration, mWriter);
         walker.walk(processor, context);
+        if (processor.getFinalStatus() != StatusCode.SUCCESS) {
+            System.exit(1);
+        }
     }
 }

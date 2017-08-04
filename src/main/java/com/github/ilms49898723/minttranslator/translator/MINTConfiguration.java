@@ -14,6 +14,11 @@ public class MINTConfiguration {
         mConfigurations = new HashMap<>();
     }
 
+    public StatusCode copy(MINTConfiguration configuration) {
+        mConfigurations.putAll(configuration.mConfigurations);
+        return StatusCode.SUCCESS;
+    }
+
     public StatusCode put(String key, String value) {
         if (mConfigurations.containsKey(key)) {
             return StatusCode.DUPLICATED_IDENTIFIER;
@@ -24,11 +29,17 @@ public class MINTConfiguration {
     }
 
     public String get(String key) {
-        if (!mConfigurations.containsKey(key)) {
-            return null;
-        } else {
-            return mConfigurations.get(key);
-        }
+        return mConfigurations.getOrDefault(key, null);
+    }
+
+    public int getInt(String key) {
+        String value = mConfigurations.getOrDefault(key, "");
+        return Integer.parseInt(value);
+    }
+
+    public double getDouble(String key) {
+        String value = mConfigurations.getOrDefault(key, "");
+        return Double.parseDouble(value);
     }
 
     public Set<String> keySet() {

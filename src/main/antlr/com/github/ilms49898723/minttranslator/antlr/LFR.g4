@@ -1,52 +1,52 @@
 grammar LFR;
 
 lfr:
-    (verilog_modules)* EOF
+    (verilogModules)* EOF
     ;
 
-verilog_modules:
-    'module' IDENTIFIER '(' ')' ';' verilog_stmts 'endmodule'
+verilogModules:
+    'module' IDENTIFIER '(' ')' ';' (verilogStmt)* 'endmodule'
+    | 'module' IDENTIFIER '(' IDENTIFIER (',' IDENTIFIER)* ')' ';' (verilogStmt)* 'endmodule'
     ;
 
-verilog_stmts:
-    (verilog_stmt)*
+verilogStmt:
+    flowInputDecl
+    | flowOutputDecl
+    | controlInputDecl
+    | nodeDecl
+    | assignStmt
     ;
 
-verilog_stmt:
-    flow_input_decl
-    | flow_output_decl
-    | control_input_decl
-    | channel_decl
-    | assign_stmt
-    ;
-
-flow_input_decl:
+flowInputDecl:
     'finput' IDENTIFIER (',' IDENTIFIER)* ';'
     ;
 
-flow_output_decl:
+flowOutputDecl:
     'foutput' IDENTIFIER (',' IDENTIFIER)* ';'
     ;
 
-control_input_decl:
+controlInputDecl:
     'cinput' IDENTIFIER (',' IDENTIFIER)* ';'
     ;
 
-channel_decl:
-    'fchannel' IDENTIFIER (',' IDENTIFIER)* ';'
+nodeDecl:
+    'fnode' IDENTIFIER (',' IDENTIFIER)* ';'
     ;
 
-assign_stmt:
+assignStmt:
     'assign' IDENTIFIER '=' expr ';'
     ;
 
 expr:
     expr OPERATOR expr
-    | expr OPERATOR expr
-    | expr OPERATOR expr
-    | expr OPERATOR expr
-    | '(' expr OPERATOR ')'
+    | '(' OPERATOR expr ')'
     | '(' expr ')'
+    | primary
+    ;
+    // Mux(Node(f1, f2), Node(f1, f2, f3));
+
+primary:
+    IDENTIFIER '(' expr (',' expr)* ')'
     | IDENTIFIER
     ;
 
@@ -55,8 +55,9 @@ IDENTIFIER:
     ;
 
 OPERATOR:
-    '+' | '-' | '*' | '/' | '&' | '#' | '$' | '@' | '!' | '~'
+    [A-Za-z_][A-Za-z0-9_]*
+    | [A-Za-z_]*[+\-*/~!@#$%^&\\]+
     ;
 
-WS:
+WHITESPACE:
     [ \t\r\n]+ -> skip;

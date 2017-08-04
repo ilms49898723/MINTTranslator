@@ -15,7 +15,7 @@ public class Operator extends BaseSymbol {
     private List<Integer> mOutputTerms;
 
     public Operator(String identifier) {
-        super(identifier, SymbolType.OPERATOR);
+        super(identifier, SymbolType.OPERATOR, -1);
     }
 
     public void setName(String name) {
@@ -31,7 +31,7 @@ public class Operator extends BaseSymbol {
     }
 
     public String getMINT(String name) {
-        return mMINT.replaceAll("$NAME", name);
+        return mMINT.replaceAll("#NAME", name);
     }
 
     public void setLayer(String layer) {

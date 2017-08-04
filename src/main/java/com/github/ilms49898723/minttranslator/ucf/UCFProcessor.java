@@ -102,12 +102,12 @@ public class UCFProcessor {
                 return StatusCode.INVALID_UCF;
             }
         }
-        Operator operator = new Operator(ucfObject.getString("operator"));
-        operator.setName(ucfObject.getString("name"));
-        operator.setInputs(ucfObject.getInt("inputs"));
-        operator.setOutputs(ucfObject.getInt("outputs"));
-        operator.setMINT(ucfObject.getString("mint"));
-        operator.setLayer(ucfObject.getString("layer"));
+        Operator operator = new Operator(ucfObject.getString("operator", ""));
+        operator.setName(ucfObject.getString("name", ""));
+        operator.setInputs(ucfObject.getInt("inputs", 0));
+        operator.setOutputs(ucfObject.getInt("outputs", 0));
+        operator.setMINT(ucfObject.getString("mint", ""));
+        operator.setLayer(ucfObject.getString("layer", ""));
         if (!operator.getLayer().equals("flow") && !operator.getLayer().equals("control")) {
             System.err.println("In UCF file:");
             System.err.println("At operator " + operator.getName());

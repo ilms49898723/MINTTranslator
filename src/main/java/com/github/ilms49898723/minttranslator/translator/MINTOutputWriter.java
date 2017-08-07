@@ -24,20 +24,16 @@ public class MINTOutputWriter {
         mControlBuffer = new ArrayList<>();
     }
 
+    public void setDeviceName(String name) {
+        mDeviceName = name;
+    }
+
     public void writeFlow(String text) {
         mFlowBuffer.add(text);
     }
 
-    public void writeFlow(List<String> text) {
-        mFlowBuffer.addAll(text);
-    }
-
     public void writeControl(String text) {
         mControlBuffer.add(text);
-    }
-
-    public void writeControl(List<String> text) {
-        mControlBuffer.addAll(text);
     }
 
     public void flush() {
@@ -46,14 +42,14 @@ public class MINTOutputWriter {
             if (!mFlowBuffer.isEmpty()) {
                 mWriter.write("LAYER FLOW\n\n");
                 for (String text : mFlowBuffer) {
-                    mWriter.write(text + "\n");
+                    mWriter.write(text);
                 }
                 mWriter.write("\nEND LAYER\n\n");
             }
             if (!mControlBuffer.isEmpty()) {
                 mWriter.write("LAYER CONTROL\n\n");
                 for (String text : mControlBuffer) {
-                    mWriter.write(text + "\n");
+                    mWriter.write(text);
                 }
                 mWriter.write("\nEND LAYER\n\n");
             }

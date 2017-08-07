@@ -106,6 +106,7 @@ public class UCFProcessor {
         operator.setName(ucfObject.getString("name", ""));
         operator.setInputs(ucfObject.getInt("inputs", 0));
         operator.setOutputs(ucfObject.getInt("outputs", 0));
+        operator.setControlInputTerm(ucfObject.getInt("controlTerm", -1));
         operator.setMINT(ucfObject.getString("mint", ""));
         operator.setLayer(ucfObject.getString("layer", ""));
         if (!operator.getLayer().equals("flow") && !operator.getLayer().equals("control")) {

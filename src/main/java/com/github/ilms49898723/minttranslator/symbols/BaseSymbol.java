@@ -3,7 +3,7 @@ package com.github.ilms49898723.minttranslator.symbols;
 /**
  * Created by littlebird on 2017/07/15.
  */
-public class BaseSymbol {
+public abstract class BaseSymbol {
     private String mIdentifier;
     private SymbolType mSymbolType;
     private int mScope;
@@ -48,5 +48,9 @@ public class BaseSymbol {
         int result = mIdentifier != null ? mIdentifier.hashCode() : 0;
         result = 31 * result + (mSymbolType != null ? mSymbolType.hashCode() : 0);
         return result;
+    }
+
+    public static String getErrorTerm() {
+        return "ERROR -1";
     }
 }

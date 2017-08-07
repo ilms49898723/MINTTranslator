@@ -25,6 +25,10 @@ public class Component extends BaseSymbol {
         return mMINTIdentifier;
     }
 
+    public List<Integer> getPorts() {
+        return mPorts;
+    }
+
     public int nextInput() {
         if (mPortCounter >= mPorts.size()) {
             return -1;
@@ -41,11 +45,21 @@ public class Component extends BaseSymbol {
         }
     }
 
-    public List<Integer> getPorts() {
-        return mPorts;
+    public String nextInputTerm() {
+        int nextPort = nextInput();
+        if (nextPort == -1) {
+            return getErrorTerm();
+        } else {
+            return getMINTIdentifier() + " " + nextPort;
+        }
     }
 
-    public static String getErrorPort() {
-        return "ERROR -1";
+    public String nextOutputTerm() {
+        int nextPort = nextOutput();
+        if (nextPort == -1) {
+            return getErrorTerm();
+        } else {
+            return getMINTIdentifier() + " " + nextPort;
+        }
     }
 }

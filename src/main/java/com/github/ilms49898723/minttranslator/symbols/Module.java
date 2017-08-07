@@ -9,25 +9,31 @@ import java.util.List;
 public class Module extends BaseSymbol {
     private List<String> mInputs;
     private List<String> mOutputs;
-    private List<String> mPorts;
+    private List<Integer> mInputTerms;
+    private List<Integer> mOutputTerms;
 
     public Module(String identifier, int scope) {
         super(identifier, SymbolType.MODULE, scope);
         mInputs = new ArrayList<>();
         mOutputs = new ArrayList<>();
-        mPorts = new ArrayList<>();
+        mInputTerms = new ArrayList<>();
+        mOutputTerms = new ArrayList<>();
     }
 
-    public void addInputs(List<String> inputs) {
-        mInputs.addAll(inputs);
+    public void addInput(String input) {
+        mInputs.add(input);
     }
 
-    public void addOutputs(List<String> outputs) {
-        mOutputs.addAll(outputs);
+    public void addOutput(String output) {
+        mOutputs.add(output);
     }
 
-    public void addPorts(List<String> ports) {
-        mPorts = ports;
+    public void addInputTerm(int term) {
+        mInputTerms.add(term);
+    }
+
+    public void addOutputTerm(int term) {
+        mOutputTerms.add(term);
     }
 
     public List<String> getInputs() {
@@ -38,7 +44,19 @@ public class Module extends BaseSymbol {
         return mOutputs;
     }
 
-    public List<String> getPorts() {
-        return mPorts;
+    public List<Integer> getInputTerms() {
+        return mInputTerms;
+    }
+
+    public List<Integer> getOutputTerms() {
+        return mOutputTerms;
+    }
+
+    public String getInputPortMINT(int index) {
+        return "#NAME_" + mInputs.get(index) + " " + mInputTerms.get(index);
+    }
+
+    public String getOutputPortMINT(int index) {
+        return "#NAME_" + mOutputs.get(index) + " " + mOutputTerms.get(index);
     }
 }

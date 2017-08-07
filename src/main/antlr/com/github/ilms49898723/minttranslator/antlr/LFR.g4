@@ -6,7 +6,6 @@ lfr:
 
 verilogModules:
     'module' IDENTIFIER '(' ')' ';' (verilogStmt)* 'endmodule'
-    | 'module' IDENTIFIER '(' IDENTIFIER (',' IDENTIFIER)* ')' ';' (verilogStmt)* 'endmodule'
     ;
 
 verilogStmt:
@@ -15,6 +14,7 @@ verilogStmt:
     | controlInputDecl
     | nodeDecl
     | assignStmt
+    | instanceStmt
     ;
 
 flowInputDecl:
@@ -34,7 +34,11 @@ nodeDecl:
     ;
 
 assignStmt:
-    'assign' IDENTIFIER '=' expr ';'
+    'assign' IDENTIFIER (',' IDENTIFIER)* '=' expr ';'
+    ;
+
+instanceStmt:
+    IDENTIFIER IDENTIFIER '(' '.' IDENTIFIER '(' IDENTIFIER ')' (',' '.' IDENTIFIER '(' IDENTIFIER ')')* ')' ';'
     ;
 
 expr:

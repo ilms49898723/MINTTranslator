@@ -11,6 +11,7 @@ public class Operator extends BaseSymbol {
     private String mLayer;
     private int mInputs;
     private int mOutputs;
+    private int mControlInputTerm;
     private List<Integer> mInputTerms;
     private List<Integer> mOutputTerms;
 
@@ -40,6 +41,14 @@ public class Operator extends BaseSymbol {
 
     public String getLayer() {
         return mLayer;
+    }
+
+    public void setControlInputTerm(int term) {
+        mControlInputTerm = term;
+    }
+
+    public int getControlInputTerm(int term) {
+        return mControlInputTerm;
     }
 
     public void setInputs(int inputs) {

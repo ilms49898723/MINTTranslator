@@ -1,12 +1,9 @@
 package com.github.ilms49898723.minttranslator.graph;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class DeviceGraph {
-    private Map<String, Boolean> mTags;
+    private Map<String, Integer> mTags;
     private Map<String, List<String>> mEdges;
     private List<String> mVertices;
 
@@ -24,14 +21,18 @@ public class DeviceGraph {
         mEdges.get(source).add(destination);
     }
 
+    public List<String> getOutVertices(String source) {
+        return mEdges.get(source);
+    }
+
     public List<String> topologicalSort() {
         mTags = new HashMap<>();
         for (String vertex : mVertices) {
-            mTags.put(vertex, false);
+            mTags.put(vertex, 0);
         }
         List<String> result = new ArrayList<>();
         for (String vertex : mVertices) {
-            if (!mTags.get(vertex)) {
+            if (mTags.get(vertex) == 0) {
                 dfs(result, vertex);
             }
         }
@@ -39,14 +40,18 @@ public class DeviceGraph {
     }
 
     private void dfs(List<String> result, String source) {
-        mTags.put(source, true);
+        if (mTags.get(source) == -1) {
+            System.err.println("Cycle detected!");
+            System.exit(1);
+        }
+        mTags.put(source, -1);
         for (String outVertex : mEdges.get(source)) {
-            if (mTags.get(outVertex)) {
-                System.err.println("Cycle detected!");
-                System.exit(1);
+            if (mTags.get(outVertex) == 0) {
+                dfs(result, outVertex);
             }
             dfs(result, outVertex);
         }
+        mTags.put(source, 1);
         result.add(source);
     }
 }

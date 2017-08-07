@@ -42,9 +42,6 @@ public class ModuleWriter {
     }
 
     public void write(String data, Target target) {
-        if (data.isEmpty() || data.matches("[ \n]+")) {
-            System.out.println("data is empty");
-        }
         switch (target) {
             case FLOW_INPUT:
                 mFlowInputDecl.add(data);

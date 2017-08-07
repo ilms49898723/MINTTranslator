@@ -292,7 +292,6 @@ public class LFRProcessor extends LFRBaseListener {
         String moduleFlow = mModules.get(moduleName).getModuleFlowMINT(instanceName);
         String moduleControl = mModules.get(moduleName).getControlMINT(instanceName);
         if (!moduleFlow.isEmpty()) {
-            System.out.println("write\n" + moduleFlow);
             mModuleWriter.write(moduleFlow, ModuleWriter.Target.FLOW_CHANNEL);
         }
         if (!moduleControl.isEmpty()) {

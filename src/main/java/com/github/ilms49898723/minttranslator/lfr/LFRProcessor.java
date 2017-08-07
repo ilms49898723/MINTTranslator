@@ -5,6 +5,7 @@ import com.github.ilms49898723.minttranslator.antlr.LFRParser;
 import com.github.ilms49898723.minttranslator.graph.DeviceGraph;
 import com.github.ilms49898723.minttranslator.symbols.*;
 import com.github.ilms49898723.minttranslator.translator.*;
+import org.antlr.v4.runtime.tree.ErrorNode;
 import org.antlr.v4.runtime.tree.TerminalNode;
 
 import java.util.*;
@@ -174,7 +175,14 @@ public class LFRProcessor extends LFRBaseListener {
         List<String> assignTargets = new ArrayList<>();
         for (TerminalNode node : ctx.IDENTIFIER()) {
             Component target = (Component) mSymbolTable.get(node.getText(), SymbolType.COMPONENT);
-            assignTargets.add(target.getMINTIdentifier());
+            int port = target.nextOutput();
+            if (port == -1) {
+                System.err.println("In file " + mFilename);
+                System.err.println("At line " + node.getSymbol().getLine() + ":");
+                System.err.println(node.getText() + " has no port available.");
+                updateStatus(StatusCode.FAIL);
+            }
+            assignTargets.add(target.getMINTIdentifier() + " " + port);
         }
         List<String> exprOutputs = new ArrayList<>();
         while (!mExprStack.empty()) {
@@ -217,7 +225,7 @@ public class LFRProcessor extends LFRBaseListener {
     }
 
     @Override
-    public void enterInstanceStmt(LFRParser.InstanceStmtContext ctx) {
+    public void exitInstanceStmt(LFRParser.InstanceStmtContext ctx) {
         String moduleName = ctx.IDENTIFIER(0).getText();
         String instanceName = ctx.IDENTIFIER(1).getText();
         Module module = (Module) mSymbolTable.get(moduleName, SymbolType.MODULE);
@@ -421,5 +429,11 @@ public class LFRProcessor extends LFRBaseListener {
                 }
             }
         }
+    }
+
+    @Override
+    public void visitErrorNode(ErrorNode node) {
+        super.visitErrorNode(node);
+        System.exit(1);
     }
 }

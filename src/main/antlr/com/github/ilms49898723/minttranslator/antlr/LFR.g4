@@ -15,6 +15,7 @@ verilogStmt:
     | nodeDecl
     | assignStmt
     | instanceStmt
+    | valveStmt
     ;
 
 flowInputDecl:
@@ -34,11 +35,19 @@ nodeDecl:
     ;
 
 assignStmt:
-    'assign' IDENTIFIER (',' IDENTIFIER)* '=' expr ';'
+    'assign' IDENTIFIER (',' IDENTIFIER)* valvePhase '=' expr ';'
+    ;
+
+valvePhase:
+    ('with' 'valve' '(' IDENTIFIER ')')?
     ;
 
 instanceStmt:
     IDENTIFIER IDENTIFIER '(' '.' IDENTIFIER '(' IDENTIFIER ')' (',' '.' IDENTIFIER '(' IDENTIFIER ')')* ')' ';'
+    ;
+
+valveStmt:
+    'valve' IDENTIFIER '(' '.src' '(' IDENTIFIER ')' ',' '.dst' '(' IDENTIFIER ')' ',' '.ctl' '(' IDENTIFIER ')' ')' ';'
     ;
 
 expr:

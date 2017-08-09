@@ -301,6 +301,82 @@ public class LFRProcessor extends LFRBaseListener {
     }
 
     @Override
+    public void exitValveStmt(LFRParser.ValveStmtContext ctx) {
+        String valveIdentifier = ctx.IDENTIFIER(0).getText();
+        Component valveComponent = new Component(valveIdentifier, 1);
+        StatusCode status = mSymbolTable.put(valveComponent);
+        if (status != StatusCode.SUCCESS) {
+            System.err.println("In file " + mFilename);
+            System.err.println("At line " + ctx.IDENTIFIER(0).getSymbol().getLine() + ":");
+            System.err.println("Invalid identifier " + valveIdentifier);
+            updateStatus(StatusCode.FAIL);
+            return;
+        }
+        Component start = (Component) mSymbolTable.get(ctx.IDENTIFIER(1).getText(), SymbolType.COMPONENT);
+        if (start == null) {
+            System.err.println("In file " + mFilename);
+            System.err.println("At line " + ctx.IDENTIFIER(1).getSymbol().getLine() + ":");
+            System.err.println(ctx.IDENTIFIER(1).getText() + " is not defined.");
+            updateStatus(StatusCode.FAIL);
+            return;
+        }
+        Component end = (Component) mSymbolTable.get(ctx.IDENTIFIER(2).getText(), SymbolType.COMPONENT);
+        if (end == null) {
+            System.err.println("In file " + mFilename);
+            System.err.println("At line " + ctx.IDENTIFIER(2).getSymbol().getLine() + ":");
+            System.err.println(ctx.IDENTIFIER(1).getText() + " is not defined.");
+            updateStatus(StatusCode.FAIL);
+            return;
+        }
+        Component ctl = (Component) mSymbolTable.get(ctx.IDENTIFIER(3).getText(), SymbolType.COMPONENT);
+        if (ctl == null) {
+            System.err.println("In file " + mFilename);
+            System.err.println("At line " + ctx.IDENTIFIER(3).getSymbol().getLine() + ":");
+            System.err.println(ctx.IDENTIFIER(3).getText() + " is not defined.");
+            updateStatus(StatusCode.FAIL);
+            return;
+        }
+        int startPort = start.nextOutput();
+        if (startPort == -1) {
+            System.err.println("In file " + mFilename);
+            System.err.println("At line " + ctx.IDENTIFIER(1).getSymbol().getLine() + ":");
+            System.err.println(ctx.IDENTIFIER(1).getText() + " has no ports available.");
+            updateStatus(StatusCode.FAIL);
+            return;
+        }
+        int endPort = end.nextOutput();
+        if (endPort == -1) {
+            System.err.println("In file " + mFilename);
+            System.err.println("At line " + ctx.IDENTIFIER(2).getSymbol().getLine() + ":");
+            System.err.println(ctx.IDENTIFIER(2).getText() + " has no ports available.");
+            updateStatus(StatusCode.FAIL);
+            return;
+        }
+        int ctlPort = ctl.nextOutput();
+        if (ctlPort == -1) {
+            System.err.println("In file " + mFilename);
+            System.err.println("At line " + ctx.IDENTIFIER(3).getSymbol().getLine() + ":");
+            System.err.println(ctx.IDENTIFIER(2).getText() + " has no ports available.");
+            updateStatus(StatusCode.FAIL);
+            return;
+        }
+        String channelId = mModuleNameGenerator.nextChannel();
+        String channel = "CHANNEL " + channelId;
+        channel += " from " + start.getMINTIdentifier() + " " + startPort;
+        channel += " to " + end.getMINTIdentifier() + " " + endPort;
+        channel += " w=" + mConfiguration.get("channelWidth");
+        mModuleWriter.write(channel, ModuleWriter.Target.FLOW_CHANNEL);
+        String valve = "VALVE " + valveIdentifier + " ON " + channelId;
+        valve += " w=1500 h=750";
+        mModuleWriter.write(valve, ModuleWriter.Target.CONTROL_COMPONENT);
+        String ctlChannel = "CHANNEL " + mModuleNameGenerator.nextChannel();
+        ctlChannel += " from " + valveIdentifier + " ? ";
+        ctlChannel += " to " + ctl.getMINTIdentifier() + " " + ctlPort;
+        ctlChannel += " w=" + mConfiguration.get("channelWidth");
+        mModuleWriter.write(ctlChannel, ModuleWriter.Target.CONTROL_CHANNEL);
+    }
+
+    @Override
     public void exitExpr(LFRParser.ExprContext ctx) {
         if (ctx.OPERATOR() == null) {
             return;

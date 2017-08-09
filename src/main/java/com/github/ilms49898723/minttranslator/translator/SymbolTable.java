@@ -5,8 +5,6 @@ import com.github.ilms49898723.minttranslator.symbols.SymbolType;
 
 import java.util.*;
 
-import static com.github.ilms49898723.minttranslator.symbols.SymbolType.COMPONENT;
-
 /**
  * Created by littlebird on 2017/07/15.
  */
@@ -27,7 +25,10 @@ public class SymbolTable {
     }
 
     public BaseSymbol get(String identifier, SymbolType symbolType) {
-        BaseSymbol result = mSymbols.getOrDefault(identifier, null);
+        if (!mSymbols.containsKey(identifier)) {
+            return null;
+        }
+        BaseSymbol result = mSymbols.get(identifier);
         return (result.getSymbolType() == symbolType) ? result : null;
     }
 

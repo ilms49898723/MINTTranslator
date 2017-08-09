@@ -6,10 +6,13 @@ import com.github.ilms49898723.minttranslator.translator.StatusCode;
 import com.github.ilms49898723.minttranslator.translator.SymbolTable;
 
 import javax.json.*;
+import javax.json.stream.JsonParsingException;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -31,8 +34,16 @@ public class UCFProcessor {
         }
     }
 
-    public StatusCode setDefault() {
-        // TODO default values
+    public StatusCode setDefaults() {
+        Operator valveOperator = new Operator("/");
+        valveOperator.setName("Valve");
+        valveOperator.setLayer("control");
+        valveOperator.setMINT("VALVE #NAME ON #TARGET");
+        valveOperator.setInputs(1);
+        valveOperator.setOutputs(0);
+        valveOperator.setInputTerms(Collections.singletonList(1));
+        valveOperator.setOutputTerms(new ArrayList<>());
+        mSymbolTable.put(valveOperator);
         return StatusCode.SUCCESS;
     }
 
@@ -60,6 +71,10 @@ public class UCFProcessor {
                     statusCode = code;
                 }
             }
+        } catch (JsonException e) {
+            System.err.println("UCF json file parsing error.");
+            System.err.println(e.getMessage());
+            System.exit(1);
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }

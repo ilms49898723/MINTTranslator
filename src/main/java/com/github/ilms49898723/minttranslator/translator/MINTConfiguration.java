@@ -21,7 +21,7 @@ public class MINTConfiguration {
 
     public StatusCode put(String key, String value) {
         if (mConfigurations.containsKey(key)) {
-            return StatusCode.DUPLICATED_IDENTIFIER;
+            return StatusCode.FAIL;
         } else {
             mConfigurations.put(key, value);
             return StatusCode.SUCCESS;

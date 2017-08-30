@@ -7,12 +7,18 @@ import java.util.List;
  * Created by littlebird on 2017/07/15.
  */
 public class Component extends BaseSymbol {
+    public enum Layer {
+        FLOW, CONTROL
+    }
+
     private List<Integer> mPorts;
     private String mMINTIdentifier;
     private int mPortCounter;
+    private Layer mLayer;
 
-    public Component(String identifier, int scope) {
+    public Component(String identifier, Layer layer, int scope) {
         super(identifier, SymbolType.COMPONENT, scope);
+        mLayer = layer;
         mPorts = new ArrayList<>();
         mMINTIdentifier = "#NAME_" + identifier;
         mPortCounter = 0;
@@ -61,5 +67,13 @@ public class Component extends BaseSymbol {
         } else {
             return getMINTIdentifier() + " " + nextPort;
         }
+    }
+
+    public boolean isFlowComponent() {
+        return mLayer == Layer.FLOW;
+    }
+
+    public boolean isControlComponent() {
+        return mLayer == Layer.CONTROL;
     }
 }

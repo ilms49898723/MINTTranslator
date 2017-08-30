@@ -17,7 +17,7 @@ public class SymbolTable {
 
     public StatusCode put(BaseSymbol symbol) {
         if (mSymbols.containsKey(symbol.getIdentifier())) {
-            return StatusCode.DUPLICATED_IDENTIFIER;
+            return StatusCode.FAIL;
         } else {
             mSymbols.put(symbol.getIdentifier(), symbol);
             return StatusCode.SUCCESS;

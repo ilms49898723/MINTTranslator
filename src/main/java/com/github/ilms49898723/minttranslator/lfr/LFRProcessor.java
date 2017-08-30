@@ -2,6 +2,8 @@ package com.github.ilms49898723.minttranslator.lfr;
 
 import com.github.ilms49898723.minttranslator.antlr.LFRBaseListener;
 import com.github.ilms49898723.minttranslator.antlr.LFRParser;
+import com.github.ilms49898723.minttranslator.errorhandling.ErrorCode;
+import com.github.ilms49898723.minttranslator.errorhandling.ErrorHandler;
 import com.github.ilms49898723.minttranslator.graph.DeviceGraph;
 import com.github.ilms49898723.minttranslator.symbols.*;
 import com.github.ilms49898723.minttranslator.translator.*;
@@ -70,9 +72,7 @@ public class LFRProcessor extends LFRBaseListener {
         mModule = new Module(identifier, 0);
         StatusCode code = mSymbolTable.put(mModule);
         if (code != StatusCode.SUCCESS) {
-            System.err.println("In file " + mFilename);
-            System.err.println("Error at line " + ctx.IDENTIFIER().getSymbol().getLine() + ":");
-            System.err.println("Invalid module identifier " + identifier);
+            ErrorHandler.printErrorMessage(mFilename, ctx.IDENTIFIER(), ErrorCode.INVALID_IDENTIFIER);
             updateStatus(code);
         }
     }
@@ -86,12 +86,10 @@ public class LFRProcessor extends LFRBaseListener {
     public void enterFlowInputDecl(LFRParser.FlowInputDeclContext ctx) {
         for (TerminalNode node : ctx.IDENTIFIER()) {
             String identifier = node.getText();
-            Component component = new Component(identifier, 1);
+            Component component = new Component(identifier, Component.Layer.FLOW, 1);
             StatusCode code = mSymbolTable.put(component);
             if (code != StatusCode.SUCCESS) {
-                System.err.println("In file " + mFilename);
-                System.err.println("Error at line " + node.getSymbol().getLine() + ":");
-                System.err.println("Invalid flow input identifier " + identifier);
+                ErrorHandler.printErrorMessage(mFilename, node, ErrorCode.INVALID_IDENTIFIER);
                 updateStatus(code);
             }
             mModule.addInput(identifier);
@@ -105,12 +103,10 @@ public class LFRProcessor extends LFRBaseListener {
     public void enterFlowOutputDecl(LFRParser.FlowOutputDeclContext ctx) {
         for (TerminalNode node : ctx.IDENTIFIER()) {
             String identifier = node.getText();
-            Component component = new Component(identifier, 1);
+            Component component = new Component(identifier, Component.Layer.FLOW, 1);
             StatusCode code = mSymbolTable.put(component);
             if (code != StatusCode.SUCCESS) {
-                System.err.println("In file " + mFilename);
-                System.err.println("Error at line " + node.getSymbol().getLine() + ":");
-                System.err.println("Invalid flow output identifier " + identifier);
+                ErrorHandler.printErrorMessage(mFilename, node, ErrorCode.INVALID_IDENTIFIER);
                 updateStatus(code);
             }
             mModule.addOutput(identifier);
@@ -124,12 +120,10 @@ public class LFRProcessor extends LFRBaseListener {
     public void enterControlInputDecl(LFRParser.ControlInputDeclContext ctx) {
         for (TerminalNode node : ctx.IDENTIFIER()) {
             String identifier = node.getText();
-            Component component = new Component(identifier, 1);
+            Component component = new Component(identifier, Component.Layer.CONTROL, 1);
             StatusCode code = mSymbolTable.put(component);
             if (code != StatusCode.SUCCESS) {
-                System.err.println("In file " + mFilename);
-                System.err.println("Error at line " + node.getSymbol().getLine() + ":");
-                System.err.println("Invalid control input identifier " + identifier);
+                ErrorHandler.printErrorMessage(mFilename, node, ErrorCode.INVALID_IDENTIFIER);
                 updateStatus(code);
             }
             mModuleWriter.write("PORT #NAME_" + identifier, ModuleWriter.Target.CONTROL_INPUT);
@@ -141,12 +135,10 @@ public class LFRProcessor extends LFRBaseListener {
     public void enterNodeDecl(LFRParser.NodeDeclContext ctx) {
         for (TerminalNode node : ctx.IDENTIFIER()) {
             String identifier = node.getText();
-            Component component = new Component(identifier, 1);
+            Component component = new Component(identifier, Component.Layer.FLOW, 1);
             StatusCode code = mSymbolTable.put(component);
             if (code != StatusCode.SUCCESS) {
-                System.err.println("In file " + mFilename);
-                System.err.println("Error at line " + node.getSymbol().getLine() + ":");
-                System.err.println("Invalid node identifier " + identifier);
+                ErrorHandler.printErrorMessage(mFilename, node, ErrorCode.INVALID_IDENTIFIER);
                 updateStatus(code);
             }
             mModuleWriter.write("NODE #NAME_" + identifier, ModuleWriter.Target.FLOW_COMPONENT);
@@ -159,8 +151,12 @@ public class LFRProcessor extends LFRBaseListener {
             String targetIdentifier = node.getText();
             Component target = (Component) mSymbolTable.get(targetIdentifier, SymbolType.COMPONENT);
             if (target == null) {
-                System.err.println("In file " + mFilename);
-                System.err.println("Undeclared identifier " + targetIdentifier);
+                ErrorHandler.printErrorMessage(mFilename, node, ErrorCode.UNDEFINED_SYMBOL);
+                updateStatus(StatusCode.FAIL);
+                continue;
+            }
+            if (!target.isFlowComponent()) {
+                ErrorHandler.printErrorMessage(mFilename, node, ErrorCode.LAYER_ERROR_FLOW);
                 updateStatus(StatusCode.FAIL);
             }
         }
@@ -177,9 +173,7 @@ public class LFRProcessor extends LFRBaseListener {
             Component target = (Component) mSymbolTable.get(node.getText(), SymbolType.COMPONENT);
             int port = target.nextOutput();
             if (port == -1) {
-                System.err.println("In file " + mFilename);
-                System.err.println("At line " + node.getSymbol().getLine() + ":");
-                System.err.println(node.getText() + " has no port available.");
+                ErrorHandler.printErrorMessage(mFilename, node, ErrorCode.NO_VALID_PORTS);
                 updateStatus(StatusCode.FAIL);
             }
             assignTargets.add(target.getMINTIdentifier() + " " + port);
@@ -206,11 +200,7 @@ public class LFRProcessor extends LFRBaseListener {
             mModuleWriter.write(channel.toString(), ModuleWriter.Target.FLOW_CHANNEL);
         } else {
             if (exprOutputs.size() != assignTargets.size()) {
-                System.err.println("In file " + mFilename);
-                System.err.println("At line " + ctx.IDENTIFIER(0).getSymbol().getLine() + ":");
-                System.err.println("Number of ports differs.");
-                System.err.println("Left: " + assignTargets.size());
-                System.err.println("Right: " + exprOutputs.size());
+                ErrorHandler.printErrorMessage(mFilename, ctx.IDENTIFIER(0), ErrorCode.ASSIGN_PORTS_NOT_MATCH);
                 updateStatus(StatusCode.FAIL);
                 return;
             }
@@ -230,18 +220,14 @@ public class LFRProcessor extends LFRBaseListener {
         String instanceName = ctx.IDENTIFIER(1).getText();
         Module module = (Module) mSymbolTable.get(moduleName, SymbolType.MODULE);
         if (module == null) {
-            System.err.println("In file " + mFilename);
-            System.err.println("At line " + ctx.IDENTIFIER(0).getSymbol().getLine() + ":");
-            System.err.println("Module " + moduleName + " is not defined.");
+            ErrorHandler.printErrorMessage(mFilename, ctx.IDENTIFIER(0), ErrorCode.UNDEFINED_MODULE);
             updateStatus(StatusCode.FAIL);
             return;
         }
         Instance instance = new Instance(instanceName, 1);
         StatusCode code = mSymbolTable.put(instance);
         if (code != StatusCode.SUCCESS) {
-            System.err.println("In file " + mFilename);
-            System.err.println("Error at line " + ctx.IDENTIFIER(0).getSymbol().getLine() + ":");
-            System.err.println("Invalid instance name " + instanceName);
+            ErrorHandler.printErrorMessage(mFilename, ctx.IDENTIFIER(1), ErrorCode.INVALID_IDENTIFIER);
             updateStatus(code);
             return;
         }
@@ -254,25 +240,24 @@ public class LFRProcessor extends LFRBaseListener {
         for (int i = 0; i < modulePorts.size(); ++i) {
             if (!module.getInputs().contains(modulePorts.get(i)) &&
                     !module.getOutputs().contains(modulePorts.get(i))) {
-                System.err.println("In file " + mFilename);
-                System.err.println("Error at line " + ctx.IDENTIFIER(0).getSymbol().getLine() + ":");
-                System.err.println("Module " + moduleName + " has no port named " + modulePorts.get(i));
+                ErrorHandler.printErrorMessage(mFilename, ctx.IDENTIFIER(i * 2), ErrorCode.PORT_NAME_NOT_MATCH);
                 updateStatus(StatusCode.FAIL);
                 return;
             }
             if (!mSymbolTable.containsKey(wires.get(i))) {
-                System.err.println("In file " + mFilename);
-                System.err.println("Error at line " + ctx.IDENTIFIER(0).getSymbol().getLine() + ":");
-                System.err.println(wires.get(i) + " is not declared.");
+                ErrorHandler.printErrorMessage(mFilename, ctx.IDENTIFIER(i * 2 + 1), ErrorCode.UNDEFINED_SYMBOL);
                 updateStatus(StatusCode.FAIL);
                 return;
             }
             Component component = (Component) mSymbolTable.get(wires.get(i), SymbolType.COMPONENT);
+            if (!component.isFlowComponent()) {
+                ErrorHandler.printErrorMessage(mFilename, ctx.IDENTIFIER(i * 2 + 1), ErrorCode.LAYER_ERROR_FLOW);
+                updateStatus(StatusCode.FAIL);
+                return;
+            }
             int port = component.nextOutput();
             if (port == -1) {
-                System.err.println("In file " + mFilename);
-                System.err.println("At line " + ctx.IDENTIFIER(0).getSymbol().getLine() + ":");
-                System.err.println(wires.get(i) + " has no port available.");
+                ErrorHandler.printErrorMessage(mFilename, ctx.IDENTIFIER(i * 2 + 1), ErrorCode.NO_VALID_PORTS);
                 updateStatus(StatusCode.FAIL);
                 return;
             }
@@ -303,60 +288,61 @@ public class LFRProcessor extends LFRBaseListener {
     @Override
     public void exitValveStmt(LFRParser.ValveStmtContext ctx) {
         String valveIdentifier = ctx.IDENTIFIER(0).getText();
-        Component valveComponent = new Component(valveIdentifier, 1);
+        Component valveComponent = new Component(valveIdentifier, Component.Layer.CONTROL, 1);
         StatusCode status = mSymbolTable.put(valveComponent);
         if (status != StatusCode.SUCCESS) {
-            System.err.println("In file " + mFilename);
-            System.err.println("At line " + ctx.IDENTIFIER(0).getSymbol().getLine() + ":");
-            System.err.println("Invalid identifier " + valveIdentifier);
+            ErrorHandler.printErrorMessage(mFilename, ctx.IDENTIFIER(0), ErrorCode.INVALID_IDENTIFIER);
             updateStatus(StatusCode.FAIL);
             return;
         }
         Component start = (Component) mSymbolTable.get(ctx.IDENTIFIER(1).getText(), SymbolType.COMPONENT);
         if (start == null) {
-            System.err.println("In file " + mFilename);
-            System.err.println("At line " + ctx.IDENTIFIER(1).getSymbol().getLine() + ":");
-            System.err.println(ctx.IDENTIFIER(1).getText() + " is not defined.");
+            ErrorHandler.printErrorMessage(mFilename, ctx.IDENTIFIER(1), ErrorCode.UNDEFINED_SYMBOL);
+            updateStatus(StatusCode.FAIL);
+            return;
+        }
+        if (!start.isFlowComponent()) {
+            ErrorHandler.printErrorMessage(mFilename, ctx.IDENTIFIER(1), ErrorCode.LAYER_ERROR_FLOW);
             updateStatus(StatusCode.FAIL);
             return;
         }
         Component end = (Component) mSymbolTable.get(ctx.IDENTIFIER(2).getText(), SymbolType.COMPONENT);
         if (end == null) {
-            System.err.println("In file " + mFilename);
-            System.err.println("At line " + ctx.IDENTIFIER(2).getSymbol().getLine() + ":");
-            System.err.println(ctx.IDENTIFIER(1).getText() + " is not defined.");
+            ErrorHandler.printErrorMessage(mFilename, ctx.IDENTIFIER(2), ErrorCode.UNDEFINED_SYMBOL);
+            updateStatus(StatusCode.FAIL);
+            return;
+        }
+        if (!end.isFlowComponent()) {
+            ErrorHandler.printErrorMessage(mFilename, ctx.IDENTIFIER(2), ErrorCode.LAYER_ERROR_FLOW);
             updateStatus(StatusCode.FAIL);
             return;
         }
         Component ctl = (Component) mSymbolTable.get(ctx.IDENTIFIER(3).getText(), SymbolType.COMPONENT);
         if (ctl == null) {
-            System.err.println("In file " + mFilename);
-            System.err.println("At line " + ctx.IDENTIFIER(3).getSymbol().getLine() + ":");
-            System.err.println(ctx.IDENTIFIER(3).getText() + " is not defined.");
+            ErrorHandler.printErrorMessage(mFilename, ctx.IDENTIFIER(3), ErrorCode.UNDEFINED_SYMBOL);
+            updateStatus(StatusCode.FAIL);
+            return;
+        }
+        if (!ctl.isControlComponent()) {
+            ErrorHandler.printErrorMessage(mFilename, ctx.IDENTIFIER(3), ErrorCode.LAYER_ERROR_CONTROL);
             updateStatus(StatusCode.FAIL);
             return;
         }
         int startPort = start.nextOutput();
         if (startPort == -1) {
-            System.err.println("In file " + mFilename);
-            System.err.println("At line " + ctx.IDENTIFIER(1).getSymbol().getLine() + ":");
-            System.err.println(ctx.IDENTIFIER(1).getText() + " has no ports available.");
+            ErrorHandler.printErrorMessage(mFilename, ctx.IDENTIFIER(1), ErrorCode.NO_VALID_PORTS);
             updateStatus(StatusCode.FAIL);
             return;
         }
         int endPort = end.nextOutput();
         if (endPort == -1) {
-            System.err.println("In file " + mFilename);
-            System.err.println("At line " + ctx.IDENTIFIER(2).getSymbol().getLine() + ":");
-            System.err.println(ctx.IDENTIFIER(2).getText() + " has no ports available.");
+            ErrorHandler.printErrorMessage(mFilename, ctx.IDENTIFIER(2), ErrorCode.NO_VALID_PORTS);
             updateStatus(StatusCode.FAIL);
             return;
         }
         int ctlPort = ctl.nextOutput();
         if (ctlPort == -1) {
-            System.err.println("In file " + mFilename);
-            System.err.println("At line " + ctx.IDENTIFIER(3).getSymbol().getLine() + ":");
-            System.err.println(ctx.IDENTIFIER(2).getText() + " has no ports available.");
+            ErrorHandler.printErrorMessage(mFilename, ctx.IDENTIFIER(3), ErrorCode.NO_VALID_PORTS);
             updateStatus(StatusCode.FAIL);
             return;
         }
@@ -367,7 +353,7 @@ public class LFRProcessor extends LFRBaseListener {
         channel += " w=" + mConfiguration.get("channelWidth");
         mModuleWriter.write(channel, ModuleWriter.Target.FLOW_CHANNEL);
         String valve = "VALVE " + valveIdentifier + " ON " + channelId;
-        valve += " w=1500 h=750";
+        valve += " w=" + mConfiguration.get("valveWidth") + " h=" + mConfiguration.get("valveHeight");
         mModuleWriter.write(valve, ModuleWriter.Target.CONTROL_COMPONENT);
         String ctlChannel = "CHANNEL " + mModuleNameGenerator.nextChannel();
         ctlChannel += " from " + valveIdentifier + " ? ";
@@ -385,17 +371,13 @@ public class LFRProcessor extends LFRBaseListener {
         Operator operator = (Operator) mSymbolTable.get(op, SymbolType.OPERATOR);
         String operatorComponent = mModuleNameGenerator.nextComponent();
         if (operator == null) {
-            System.err.println("In LFR file");
-            System.err.println("At line " + ctx.OPERATOR().getSymbol().getLine() + ":");
-            System.err.println(op + " is not a valid operator.");
+            ErrorHandler.printErrorMessage(mFilename, ctx.OPERATOR(), ErrorCode.INVALID_OPERATOR);
             updateStatus(StatusCode.FAIL);
             mExprStack.push(BaseSymbol.getErrorTerm());
             return;
         }
         if (operator.getInputs() != 1 && operator.getInputs() != 2) {
-            System.err.println("In LFR file");
-            System.err.println("At line " + ctx.OPERATOR().getSymbol().getLine() + ":");
-            System.err.println("Operator " + ctx.OPERATOR().getText() + " is neither a unary nor binary operator.");
+            ErrorHandler.printErrorMessage(mFilename, ctx.OPERATOR(), ErrorCode.NOT_BINARY_UNARY_OPERATOR);
             updateStatus(StatusCode.FAIL);
             mExprStack.push(BaseSymbol.getErrorTerm());
             return;
@@ -438,18 +420,20 @@ public class LFRProcessor extends LFRBaseListener {
         if (ctx.expr().isEmpty()) {
             Component component = (Component) mSymbolTable.get(ctx.IDENTIFIER().getText(), SymbolType.COMPONENT);
             if (component == null) {
-                System.err.println("In LFR file");
-                System.err.println("At line " + ctx.IDENTIFIER().getSymbol().getLine() + ":");
-                System.err.println(ctx.IDENTIFIER().getText() + " is not a component.");
+                ErrorHandler.printErrorMessage(mFilename, ctx.IDENTIFIER(), ErrorCode.INVALID_IDENTIFIER);
+                updateStatus(StatusCode.FAIL);
+                mExprStack.push(Component.getErrorTerm());
+                return;
+            }
+            if (!component.isFlowComponent()) {
+                ErrorHandler.printErrorMessage(mFilename, ctx.IDENTIFIER(), ErrorCode.LAYER_ERROR_FLOW);
                 updateStatus(StatusCode.FAIL);
                 mExprStack.push(Component.getErrorTerm());
                 return;
             }
             int portNumber = component.nextOutput();
             if (portNumber == -1) {
-                System.err.println("In LFR file");
-                System.err.println("At line " + ctx.IDENTIFIER().getSymbol().getLine() + ":");
-                System.err.println(ctx.IDENTIFIER().getText() + " has no port available.");
+                ErrorHandler.printErrorMessage(mFilename, ctx.IDENTIFIER(), ErrorCode.NO_VALID_PORTS);
                 updateStatus(StatusCode.FAIL);
                 mExprStack.push(Component.getErrorTerm());
                 return;
@@ -465,17 +449,13 @@ public class LFRProcessor extends LFRBaseListener {
             Collections.reverse(inputs);
             Operator operator = (Operator) mSymbolTable.get(operatorIdentifier, SymbolType.OPERATOR);
             if (operator == null) {
-                System.err.println("In LFR file");
-                System.err.println("At line " + ctx.IDENTIFIER().getSymbol().getLine() + ":");
-                System.err.println(ctx.IDENTIFIER().getText() + " is not an operator.");
+                ErrorHandler.printErrorMessage(mFilename, ctx.IDENTIFIER(), ErrorCode.INVALID_OPERATOR);
                 updateStatus(StatusCode.FAIL);
                 mExprStack.push(Component.getErrorTerm());
                 return;
             }
             if (operator.getInputs() != inputs.size()) {
-                System.err.println("In LFR file");
-                System.err.println("At line " + ctx.IDENTIFIER().getSymbol().getLine() + ":");
-                System.err.println(ctx.IDENTIFIER().getText() + ": inputs not matched.");
+                ErrorHandler.printErrorMessage(mFilename, ctx.IDENTIFIER(), ErrorCode.OPERATOR_INPUTS_NOT_MATCH);
                 updateStatus(StatusCode.FAIL);
                 mExprStack.push(Component.getErrorTerm());
                 return;
@@ -497,11 +477,9 @@ public class LFRProcessor extends LFRBaseListener {
                     mExprStack.push(operatorComponent + " " + outputTerm);
                 }
             } else {
-                String operatorComponent = mModuleNameGenerator.nextComponent();
-                mModuleWriter.write(operator.getMINT(operatorComponent), ModuleWriter.Target.CONTROL_COMPONENT);
-                for (int i = 0; i < inputs.size(); ++i) {
-                    String input = inputs.get(i);
-                }
+                ErrorHandler.printErrorMessage(mFilename, ctx.IDENTIFIER(), ErrorCode.CONTROL_OPERATOR_NOT_SUPPORT);
+                updateStatus(StatusCode.FAIL);
+                mExprStack.push(Component.getErrorTerm());
             }
         }
     }

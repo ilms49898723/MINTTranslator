@@ -94,7 +94,7 @@ public class LFRProcessor extends LFRBaseListener {
             }
             mModule.addInput(identifier);
             mModule.addInputTerm(component.nextInput());
-            mModuleWriter.write("PORT #NAME_" + identifier, ModuleWriter.Target.FLOW_INPUT);
+            mModuleWriter.write("PORT #NAME_" + identifier + " r=" + mConfiguration.get("portRadius"), ModuleWriter.Target.FLOW_INPUT);
             mModuleWriter.write("NODE #NAME_" + identifier, ModuleWriter.Target.FLOW_INPUT_NODE);
         }
     }
@@ -111,7 +111,7 @@ public class LFRProcessor extends LFRBaseListener {
             }
             mModule.addOutput(identifier);
             mModule.addOutputTerm(component.nextOutput());
-            mModuleWriter.write("PORT #NAME_" + identifier, ModuleWriter.Target.FLOW_OUTPUT);
+            mModuleWriter.write("PORT #NAME_" + identifier + " r=" + mConfiguration.get("portRadius"), ModuleWriter.Target.FLOW_OUTPUT);
             mModuleWriter.write("NODE #NAME_" + identifier, ModuleWriter.Target.FLOW_OUTPUT_NODE);
         }
     }
@@ -126,7 +126,7 @@ public class LFRProcessor extends LFRBaseListener {
                 ErrorHandler.printErrorMessage(mFilename, node, ErrorCode.INVALID_IDENTIFIER);
                 updateStatus(code);
             }
-            mModuleWriter.write("PORT #NAME_" + identifier, ModuleWriter.Target.CONTROL_INPUT);
+            mModuleWriter.write("PORT #NAME_" + identifier + " r=" + mConfiguration.get("portRadius"), ModuleWriter.Target.CONTROL_INPUT);
             mModuleWriter.write("NODE #NAME_" + identifier, ModuleWriter.Target.CONTROL_INPUT_NODE);
         }
     }

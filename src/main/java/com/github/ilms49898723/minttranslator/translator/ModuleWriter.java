@@ -79,16 +79,16 @@ public class ModuleWriter {
     public String getFlowMINT(String name) {
         StringBuilder stringBuilder = new StringBuilder();
         for (String mint : mFlowInputDecl) {
-            stringBuilder.append(mint.replaceAll("#NAME", name)).append("\n");
+            stringBuilder.append(mint.replaceAll("#NAME", name)).append(";\n");
         }
         for (String mint : mFlowOutputDecl) {
-            stringBuilder.append(mint.replaceAll("#NAME", name)).append("\n");
+            stringBuilder.append(mint.replaceAll("#NAME", name)).append(";\n");
         }
         for (String mint : mFlowComponentDecl) {
-            stringBuilder.append(mint.replaceAll("#NAME", name)).append("\n");
+            stringBuilder.append(mint.replaceAll("#NAME", name)).append(";\n");
         }
         for (String mint : mFlowChannelDecl) {
-            stringBuilder.append(mint.replaceAll("#NAME", name)).append("\n");
+            stringBuilder.append(mint.replaceAll("#NAME", name)).append(";\n");
         }
         return stringBuilder.toString();
     }
@@ -96,16 +96,16 @@ public class ModuleWriter {
     public String getModuleFlowMINT(String name) {
         StringBuilder stringBuilder = new StringBuilder();
         for (String mint : mFlowInputNodeDecl) {
-            stringBuilder.append(mint.replaceAll("#NAME", name)).append("\n");
+            stringBuilder.append(mint.replaceAll("#NAME", name)).append(";\n");
         }
         for (String mint : mFlowOutputNodeDecl) {
-            stringBuilder.append(mint.replaceAll("#NAME", name)).append("\n");
+            stringBuilder.append(mint.replaceAll("#NAME", name)).append(";\n");
         }
         for (String mint : mFlowComponentDecl) {
-            stringBuilder.append(mint.replaceAll("#NAME", name)).append("\n");
+            stringBuilder.append(mint.replaceAll("#NAME", name)).append(";\n");
         }
         for (String mint : mFlowChannelDecl) {
-            stringBuilder.append(mint.replaceAll("#NAME", name)).append("\n");
+            stringBuilder.append(mint.replaceAll("#NAME", name)).append(";\n");
         }
         if (stringBuilder.length() > 0) {
             stringBuilder.deleteCharAt(stringBuilder.length() - 1);
@@ -116,13 +116,13 @@ public class ModuleWriter {
     public String getControlMINT(String name) {
         StringBuilder stringBuilder = new StringBuilder();
         for (String mint : mControlInputDecl) {
-            stringBuilder.append(mint.replaceAll("#NAME", name)).append("\n");
+            stringBuilder.append(mint.replaceAll("#NAME", name)).append(";\n");
         }
         for (String mint : mControlComponentDecl) {
-            stringBuilder.append(mint.replaceAll("#NAME", name)).append("\n");
+            stringBuilder.append(mint.replaceAll("#NAME", name)).append(";\n");
         }
         for (String mint : mControlChannelDecl) {
-            stringBuilder.append(mint.replaceAll("#NAME", name)).append("\n");
+            stringBuilder.append(mint.replaceAll("#NAME", name)).append(";\n");
         }
         return stringBuilder.toString();
     }

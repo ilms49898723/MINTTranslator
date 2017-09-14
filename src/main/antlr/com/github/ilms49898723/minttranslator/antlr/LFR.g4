@@ -35,11 +35,11 @@ nodeDecl:
     ;
 
 assignStmt:
-    'assign' IDENTIFIER (',' IDENTIFIER)* valvePhase '=' expr ';'
+    'assign' valvePhase IDENTIFIER (',' IDENTIFIER)* '=' expr ';'
     ;
 
 valvePhase:
-    ('with' 'valve' '(' IDENTIFIER ')')?
+    ('valve' '(' IDENTIFIER ')' 'on')?
     ;
 
 instanceStmt:
@@ -47,7 +47,8 @@ instanceStmt:
     ;
 
 valveStmt:
-    'valve' IDENTIFIER '(' '.src' '(' IDENTIFIER ')' ',' '.dst' '(' IDENTIFIER ')' ',' '.ctl' '(' IDENTIFIER ')' ')' ';'
+    'valve' IDENTIFIER '(' IDENTIFIER ',' IDENTIFIER ',' IDENTIFIER ')' ';'
+    | 'valve' IDENTIFIER '(' '.src' '(' IDENTIFIER ')' ',' '.dst' '(' IDENTIFIER ')' ',' '.ctl' '(' IDENTIFIER ')' ')' ';'
     ;
 
 expr:
@@ -56,11 +57,22 @@ expr:
     | '(' expr ')'
     | primary
     ;
-    // Mux(Node(f1, f2), Node(f1, f2, f3));
 
 primary:
     IDENTIFIER '(' expr (',' expr)* ')'
     | IDENTIFIER
+    ;
+
+RESERVED:
+    'module'
+    | 'endmodule'
+    | 'finput'
+    | 'foutput'
+    | 'cinput'
+    | 'fnode'
+    | 'assign'
+    | 'with'
+    | 'valve'
     ;
 
 IDENTIFIER:

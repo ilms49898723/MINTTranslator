@@ -183,9 +183,10 @@ public class LFRProcessor extends LFRBaseListener {
             exprOutputs.add(mExprStack.pop());
         }
         Collections.reverse(exprOutputs);
+        String channelId = mModuleNameGenerator.nextChannel();
         if (exprOutputs.size() == 1) {
             StringBuilder channel = new StringBuilder();
-            channel.append("CHANNEL ").append(mModuleNameGenerator.nextChannel());
+            channel.append("CHANNEL ").append(channelId);
             channel.append(" from ").append(exprOutputs.get(0)).append(" to ");
             boolean isFirst = true;
             for (String output : assignTargets) {
@@ -205,12 +206,15 @@ public class LFRProcessor extends LFRBaseListener {
                 return;
             }
             for (int i = 0; i < assignTargets.size(); ++i) {
-                String channel = "CHANNEL " + mModuleNameGenerator.nextChannel();
+                String channel = "CHANNEL " + channelId;
                 channel += " from " + exprOutputs.get(i);
                 channel += " to " + assignTargets.get(i);
                 channel += " w=" + mConfiguration.get("channelWidth");
                 mModuleWriter.write(channel, ModuleWriter.Target.FLOW_CHANNEL);
             }
+        }
+        if (ctx.valvePhase() != null) {
+            System.err.println("A valve on channel " + channelId);
         }
     }
 

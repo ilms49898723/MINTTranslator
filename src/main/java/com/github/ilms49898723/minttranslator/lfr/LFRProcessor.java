@@ -213,8 +213,33 @@ public class LFRProcessor extends LFRBaseListener {
                 mModuleWriter.write(channel, ModuleWriter.Target.FLOW_CHANNEL);
             }
         }
-        if (ctx.valvePhase() != null) {
-            System.err.println("A valve on channel " + channelId);
+        if (ctx.valvePhase().IDENTIFIER() != null) {
+            Component ctl = (Component) mSymbolTable.get(ctx.valvePhase().IDENTIFIER().getText(), SymbolType.COMPONENT);
+            if (ctl == null) {
+                ErrorHandler.printErrorMessage(mFilename, ctx.valvePhase().IDENTIFIER(), ErrorCode.UNDEFINED_SYMBOL);
+                updateStatus(StatusCode.FAIL);
+                return;
+            }
+            if (!ctl.isControlComponent()) {
+                ErrorHandler.printErrorMessage(mFilename, ctx.valvePhase().IDENTIFIER(), ErrorCode.LAYER_ERROR_CONTROL);
+                updateStatus(StatusCode.FAIL);
+                return;
+            }
+            int ctlPort = ctl.nextOutput();
+            if (ctlPort == -1) {
+                ErrorHandler.printErrorMessage(mFilename, ctx.valvePhase().IDENTIFIER(), ErrorCode.NO_VALID_PORTS);
+                updateStatus(StatusCode.FAIL);
+                return;
+            }
+            String valveIdentifier = mModuleNameGenerator.nextComponent();
+            String valve = "VALVE " + valveIdentifier + " ON " + channelId;
+            valve += " w=" + mConfiguration.get("valveWidth") + " h=" + mConfiguration.get("valveHeight");
+            mModuleWriter.write(valve, ModuleWriter.Target.CONTROL_COMPONENT);
+            String ctlChannel = "CHANNEL " + mModuleNameGenerator.nextChannel();
+            ctlChannel += " from " + valveIdentifier + " 1 ";
+            ctlChannel += " to " + ctl.getMINTIdentifier() + " " + ctlPort;
+            ctlChannel += " w=" + mConfiguration.get("channelWidth");
+            mModuleWriter.write(ctlChannel, ModuleWriter.Target.CONTROL_CHANNEL);
         }
     }
 
@@ -360,7 +385,7 @@ public class LFRProcessor extends LFRBaseListener {
         valve += " w=" + mConfiguration.get("valveWidth") + " h=" + mConfiguration.get("valveHeight");
         mModuleWriter.write(valve, ModuleWriter.Target.CONTROL_COMPONENT);
         String ctlChannel = "CHANNEL " + mModuleNameGenerator.nextChannel();
-        ctlChannel += " from " + valveIdentifier + " ? ";
+        ctlChannel += " from " + valveIdentifier + " 1 ";
         ctlChannel += " to " + ctl.getMINTIdentifier() + " " + ctlPort;
         ctlChannel += " w=" + mConfiguration.get("channelWidth");
         mModuleWriter.write(ctlChannel, ModuleWriter.Target.CONTROL_CHANNEL);

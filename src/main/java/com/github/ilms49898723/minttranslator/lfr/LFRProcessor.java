@@ -233,10 +233,10 @@ public class LFRProcessor extends LFRBaseListener {
             }
             String valveIdentifier = mModuleNameGenerator.nextComponent();
             String valve = "VALVE " + valveIdentifier + " ON " + channelId;
-            valve += " w=" + mConfiguration.get("valveWidth") + " h=" + mConfiguration.get("valveHeight");
+            valve += " w=" + mConfiguration.get("valveWidth") + " l=" + mConfiguration.get("valveHeight");
             mModuleWriter.write(valve, ModuleWriter.Target.CONTROL_COMPONENT);
             String ctlChannel = "CHANNEL " + mModuleNameGenerator.nextChannel();
-            ctlChannel += " from " + valveIdentifier + " 1 ";
+            ctlChannel += " from " + valveIdentifier + " 1";
             ctlChannel += " to " + ctl.getMINTIdentifier() + " " + ctlPort;
             ctlChannel += " w=" + mConfiguration.get("channelWidth");
             mModuleWriter.write(ctlChannel, ModuleWriter.Target.CONTROL_CHANNEL);
@@ -382,10 +382,10 @@ public class LFRProcessor extends LFRBaseListener {
         channel += " w=" + mConfiguration.get("channelWidth");
         mModuleWriter.write(channel, ModuleWriter.Target.FLOW_CHANNEL);
         String valve = "VALVE " + valveIdentifier + " ON " + channelId;
-        valve += " w=" + mConfiguration.get("valveWidth") + " h=" + mConfiguration.get("valveHeight");
+        valve += " w=" + mConfiguration.get("valveWidth") + " l=" + mConfiguration.get("valveHeight");
         mModuleWriter.write(valve, ModuleWriter.Target.CONTROL_COMPONENT);
         String ctlChannel = "CHANNEL " + mModuleNameGenerator.nextChannel();
-        ctlChannel += " from " + valveIdentifier + " 1 ";
+        ctlChannel += " from " + valveIdentifier + " 1";
         ctlChannel += " to " + ctl.getMINTIdentifier() + " " + ctlPort;
         ctlChannel += " w=" + mConfiguration.get("channelWidth");
         mModuleWriter.write(ctlChannel, ModuleWriter.Target.CONTROL_CHANNEL);

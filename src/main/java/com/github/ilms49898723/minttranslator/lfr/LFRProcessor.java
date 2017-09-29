@@ -232,7 +232,7 @@ public class LFRProcessor extends LFRBaseListener {
                 return;
             }
             String valveIdentifier = mModuleNameGenerator.nextComponent();
-            String valve = "VALVE " + valveIdentifier + " ON " + channelId;
+            String valve = "VALVE " + valveIdentifier + " on " + channelId;
             valve += " w=" + mConfiguration.get("valveWidth") + " l=" + mConfiguration.get("valveHeight");
             mModuleWriter.write(valve, ModuleWriter.Target.CONTROL_COMPONENT);
             String ctlChannel = "CHANNEL " + mModuleNameGenerator.nextChannel();
@@ -381,7 +381,7 @@ public class LFRProcessor extends LFRBaseListener {
         channel += " to " + end.getMINTIdentifier() + " " + endPort;
         channel += " w=" + mConfiguration.get("channelWidth");
         mModuleWriter.write(channel, ModuleWriter.Target.FLOW_CHANNEL);
-        String valve = "VALVE " + valveIdentifier + " ON " + channelId;
+        String valve = "VALVE " + valveIdentifier + " on " + channelId;
         valve += " w=" + mConfiguration.get("valveWidth") + " l=" + mConfiguration.get("valveHeight");
         mModuleWriter.write(valve, ModuleWriter.Target.CONTROL_COMPONENT);
         String ctlChannel = "CHANNEL " + mModuleNameGenerator.nextChannel();

@@ -302,24 +302,25 @@ public class LFRProcessor extends LFRBaseListener {
         for (int i = 0; i < modulePorts.size(); ++i) {
             if (!module.getInputs().contains(modulePorts.get(i)) &&
                     !module.getOutputs().contains(modulePorts.get(i))) {
-                ErrorHandler.printErrorMessage(mFilename, ctx.IDENTIFIER(i * 2), ErrorCode.PORT_NAME_NOT_MATCH);
+                System.out.println("ERROR AT " + modulePorts.get(i));
+                ErrorHandler.printErrorMessage(mFilename, ctx.IDENTIFIER((i + 1) * 2), ErrorCode.PORT_NAME_NOT_MATCH);
                 updateStatus(StatusCode.FAIL);
                 return;
             }
             if (!mSymbolTable.containsKey(wires.get(i))) {
-                ErrorHandler.printErrorMessage(mFilename, ctx.IDENTIFIER(i * 2 + 1), ErrorCode.UNDEFINED_SYMBOL);
+                ErrorHandler.printErrorMessage(mFilename, ctx.IDENTIFIER((i + 1) * 2 + 1), ErrorCode.UNDEFINED_SYMBOL);
                 updateStatus(StatusCode.FAIL);
                 return;
             }
             Component component = (Component) mSymbolTable.get(wires.get(i), SymbolType.COMPONENT);
             if (!component.isFlowComponent()) {
-                ErrorHandler.printErrorMessage(mFilename, ctx.IDENTIFIER(i * 2 + 1), ErrorCode.LAYER_ERROR_FLOW);
+                ErrorHandler.printErrorMessage(mFilename, ctx.IDENTIFIER((i + 1) * 2 + 1), ErrorCode.LAYER_ERROR_FLOW);
                 updateStatus(StatusCode.FAIL);
                 return;
             }
             int port = component.nextOutput();
             if (port == -1) {
-                ErrorHandler.printErrorMessage(mFilename, ctx.IDENTIFIER(i * 2 + 1), ErrorCode.NO_VALID_PORTS);
+                ErrorHandler.printErrorMessage(mFilename, ctx.IDENTIFIER((i + 1) * 2 + 1), ErrorCode.NO_VALID_PORTS);
                 updateStatus(StatusCode.FAIL);
                 return;
             }

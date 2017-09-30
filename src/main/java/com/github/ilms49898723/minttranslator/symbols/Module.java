@@ -46,14 +46,6 @@ public class Module extends BaseSymbol {
         return mOutputs;
     }
 
-    public List<Integer> getInputTerms() {
-        return mInputTerms;
-    }
-
-    public List<Integer> getOutputTerms() {
-        return mOutputTerms;
-    }
-
     public String getInputPortMINT(int index) {
         return "#NAME_" + mInputs.get(index) + " " + mInputTerms.get(index);
     }

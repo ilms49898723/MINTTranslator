@@ -78,11 +78,6 @@ IDENTIFIER:
     [A-Za-z_][A-Za-z0-9_]*
     ;
 
-OPERATOR:
-    [A-Za-z_][A-Za-z0-9_]*
-    | [A-Za-z_]*[+\-*/~!@#$%^&\\]+
-    ;
-
 WHITESPACE:
     [ \t\r\n]+ -> skip;
 

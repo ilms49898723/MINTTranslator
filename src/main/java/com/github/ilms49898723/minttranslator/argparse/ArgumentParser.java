@@ -11,13 +11,13 @@ public class ArgumentParser {
     public ArgumentParser(String[] args) {
         Options options = new Options();
         Option lfrInput = new Option("l", "lfr", true, "LFR input file");
-        Option ucfInput = new Option("u", "ucf", true, "UCF input file");
+        Option ucfInput = new Option("u", "ucf", true, "UCF input file (default: mint.json)");
         Option output = new Option("o", "output", true, "MINT output file");
         Option deviceName = new Option("n", "name", true, "Device name, \'device\' if not given");
         lfrInput.setArgs(Option.UNLIMITED_VALUES);
         lfrInput.setRequired(true);
         ucfInput.setArgs(1);
-        ucfInput.setRequired(true);
+        ucfInput.setRequired(false);
         output.setArgs(1);
         output.setRequired(true);
         deviceName.setArgs(1);
@@ -42,7 +42,7 @@ public class ArgumentParser {
     }
 
     public String getUCFInputPath() {
-        return mCommandLine.getOptionValue("ucf");
+        return mCommandLine.getOptionValue("ucf", "mint.json");
     }
 
     public String getOutputPath() {

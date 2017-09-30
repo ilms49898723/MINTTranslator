@@ -11,7 +11,9 @@ verilogModules:
 verilogStmt:
     flowInputDecl
     | flowOutputDecl
+    | flowPortDecl
     | controlInputDecl
+    | controlPortDecl
     | nodeDecl
     | assignStmt
     | instanceStmt
@@ -26,8 +28,16 @@ flowOutputDecl:
     'foutput' IDENTIFIER (',' IDENTIFIER)* ';'
     ;
 
+flowPortDecl:
+    'fport' IDENTIFIER (',' IDENTIFIER)* ';'
+    ;
+
 controlInputDecl:
     'cinput' IDENTIFIER (',' IDENTIFIER)* ';'
+    ;
+
+controlPortDecl:
+    'cport' IDENTIFIER (',' IDENTIFIER)* ';'
     ;
 
 nodeDecl:

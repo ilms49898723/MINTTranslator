@@ -83,7 +83,7 @@ public class LFRProcessor extends LFRBaseListener {
     }
 
     @Override
-    public void enterFlowInputDecl(LFRParser.FlowInputDeclContext ctx) {
+    public void exitFlowInputDecl(LFRParser.FlowInputDeclContext ctx) {
         for (TerminalNode node : ctx.IDENTIFIER()) {
             String identifier = node.getText();
             Component component = new Component(identifier, Component.Layer.FLOW, 1);
@@ -100,7 +100,7 @@ public class LFRProcessor extends LFRBaseListener {
     }
 
     @Override
-    public void enterFlowOutputDecl(LFRParser.FlowOutputDeclContext ctx) {
+    public void exitFlowOutputDecl(LFRParser.FlowOutputDeclContext ctx) {
         for (TerminalNode node : ctx.IDENTIFIER()) {
             String identifier = node.getText();
             Component component = new Component(identifier, Component.Layer.FLOW, 1);
@@ -117,7 +117,39 @@ public class LFRProcessor extends LFRBaseListener {
     }
 
     @Override
-    public void enterControlInputDecl(LFRParser.ControlInputDeclContext ctx) {
+    public void exitFlowPortDecl(LFRParser.FlowPortDeclContext ctx) {
+        for (TerminalNode node : ctx.IDENTIFIER()) {
+            String identifier = node.getText();
+            Component component = new Component(identifier, Component.Layer.FLOW, 1);
+            StatusCode code = mSymbolTable.put(component);
+            if (code != StatusCode.SUCCESS) {
+                ErrorHandler.printErrorMessage(mFilename, node, ErrorCode.INVALID_IDENTIFIER);
+                updateStatus(code);
+            }
+            mModule.addOutput(identifier);
+            mModule.addOutputTerm(component.nextOutput());
+            mModuleWriter.write("PORT #NAME_" + identifier + " r=" + mConfiguration.get("portRadius"), ModuleWriter.Target.FLOW_COMPONENT);
+            mModuleWriter.write("NODE #NAME_" + identifier, ModuleWriter.Target.FLOW_COMPONENT);
+        }
+    }
+
+    @Override
+    public void exitControlInputDecl(LFRParser.ControlInputDeclContext ctx) {
+        for (TerminalNode node : ctx.IDENTIFIER()) {
+            String identifier = node.getText();
+            Component component = new Component(identifier, Component.Layer.CONTROL, 1);
+            StatusCode code = mSymbolTable.put(component);
+            if (code != StatusCode.SUCCESS) {
+                ErrorHandler.printErrorMessage(mFilename, node, ErrorCode.INVALID_IDENTIFIER);
+                updateStatus(code);
+            }
+            mModuleWriter.write("PORT #NAME_" + identifier + " r=" + mConfiguration.get("portRadius"), ModuleWriter.Target.CONTROL_INPUT);
+            mModuleWriter.write("NODE #NAME_" + identifier, ModuleWriter.Target.CONTROL_INPUT_NODE);
+        }
+    }
+
+    @Override
+    public void exitControlPortDecl(LFRParser.ControlPortDeclContext ctx) {
         for (TerminalNode node : ctx.IDENTIFIER()) {
             String identifier = node.getText();
             Component component = new Component(identifier, Component.Layer.CONTROL, 1);

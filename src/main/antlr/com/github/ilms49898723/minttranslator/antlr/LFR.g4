@@ -78,7 +78,9 @@ RESERVED:
     | 'endmodule'
     | 'finput'
     | 'foutput'
+    | 'fport'
     | 'cinput'
+    | 'cport'
     | 'fnode'
     | 'assign'
     | 'with'
@@ -96,3 +98,6 @@ OPERATOR:
 
 WHITESPACE:
     [ \t\r\n]+ -> skip;
+
+COMMENT:
+    '#' ~[\r\n]* -> skip;

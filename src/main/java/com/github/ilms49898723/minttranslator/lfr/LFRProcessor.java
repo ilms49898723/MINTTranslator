@@ -6,6 +6,7 @@ import com.github.ilms49898723.minttranslator.errorhandling.ErrorCode;
 import com.github.ilms49898723.minttranslator.errorhandling.ErrorHandler;
 import com.github.ilms49898723.minttranslator.graph.DeviceGraph;
 import com.github.ilms49898723.minttranslator.symbols.*;
+import com.github.ilms49898723.minttranslator.symbols.info.Layer;
 import com.github.ilms49898723.minttranslator.translator.*;
 import org.antlr.v4.runtime.tree.ErrorNode;
 import org.antlr.v4.runtime.tree.TerminalNode;
@@ -86,7 +87,7 @@ public class LFRProcessor extends LFRBaseListener {
     public void exitFlowInputDecl(LFRParser.FlowInputDeclContext ctx) {
         for (TerminalNode node : ctx.IDENTIFIER()) {
             String identifier = node.getText();
-            Component component = new Component(identifier, Component.Layer.FLOW, 1);
+            Component component = new Component(identifier, Layer.FLOW, 1);
             StatusCode code = mSymbolTable.put(component);
             if (code != StatusCode.SUCCESS) {
                 ErrorHandler.printErrorMessage(mFilename, node, ErrorCode.INVALID_IDENTIFIER);
@@ -94,7 +95,7 @@ public class LFRProcessor extends LFRBaseListener {
             }
             mModule.addInput(identifier);
             mModule.addInputTerm(component.nextInput());
-            mModuleWriter.write("PORT #NAME_" + identifier + " r=" + mConfiguration.get("portRadius"), ModuleWriter.Target.FLOW_INPUT);
+            mModuleWriter.write("PORT #NAME_" + identifier + " r=" + mConfiguration.getDefaultPortRadius(), ModuleWriter.Target.FLOW_INPUT);
             mModuleWriter.write("NODE #NAME_" + identifier, ModuleWriter.Target.FLOW_INPUT_NODE);
         }
     }
@@ -103,7 +104,7 @@ public class LFRProcessor extends LFRBaseListener {
     public void exitFlowOutputDecl(LFRParser.FlowOutputDeclContext ctx) {
         for (TerminalNode node : ctx.IDENTIFIER()) {
             String identifier = node.getText();
-            Component component = new Component(identifier, Component.Layer.FLOW, 1);
+            Component component = new Component(identifier, Layer.FLOW, 1);
             StatusCode code = mSymbolTable.put(component);
             if (code != StatusCode.SUCCESS) {
                 ErrorHandler.printErrorMessage(mFilename, node, ErrorCode.INVALID_IDENTIFIER);
@@ -111,7 +112,7 @@ public class LFRProcessor extends LFRBaseListener {
             }
             mModule.addOutput(identifier);
             mModule.addOutputTerm(component.nextOutput());
-            mModuleWriter.write("PORT #NAME_" + identifier + " r=" + mConfiguration.get("portRadius"), ModuleWriter.Target.FLOW_OUTPUT);
+            mModuleWriter.write("PORT #NAME_" + identifier + " r=" + mConfiguration.getDefaultPortRadius(), ModuleWriter.Target.FLOW_OUTPUT);
             mModuleWriter.write("NODE #NAME_" + identifier, ModuleWriter.Target.FLOW_OUTPUT_NODE);
         }
     }
@@ -120,7 +121,7 @@ public class LFRProcessor extends LFRBaseListener {
     public void exitFlowPortDecl(LFRParser.FlowPortDeclContext ctx) {
         for (TerminalNode node : ctx.IDENTIFIER()) {
             String identifier = node.getText();
-            Component component = new Component(identifier, Component.Layer.FLOW, 1);
+            Component component = new Component(identifier, Layer.FLOW, 1);
             StatusCode code = mSymbolTable.put(component);
             if (code != StatusCode.SUCCESS) {
                 ErrorHandler.printErrorMessage(mFilename, node, ErrorCode.INVALID_IDENTIFIER);
@@ -128,7 +129,7 @@ public class LFRProcessor extends LFRBaseListener {
             }
             mModule.addOutput(identifier);
             mModule.addOutputTerm(component.nextOutput());
-            mModuleWriter.write("PORT #NAME_" + identifier + " r=" + mConfiguration.get("portRadius"), ModuleWriter.Target.FLOW_COMPONENT);
+            mModuleWriter.write("PORT #NAME_" + identifier + " r=" + mConfiguration.getDefaultPortRadius(), ModuleWriter.Target.FLOW_COMPONENT);
             mModuleWriter.write("NODE #NAME_" + identifier, ModuleWriter.Target.FLOW_COMPONENT);
         }
     }
@@ -137,13 +138,13 @@ public class LFRProcessor extends LFRBaseListener {
     public void exitControlInputDecl(LFRParser.ControlInputDeclContext ctx) {
         for (TerminalNode node : ctx.IDENTIFIER()) {
             String identifier = node.getText();
-            Component component = new Component(identifier, Component.Layer.CONTROL, 1);
+            Component component = new Component(identifier, Layer.CONTROL, 1);
             StatusCode code = mSymbolTable.put(component);
             if (code != StatusCode.SUCCESS) {
                 ErrorHandler.printErrorMessage(mFilename, node, ErrorCode.INVALID_IDENTIFIER);
                 updateStatus(code);
             }
-            mModuleWriter.write("PORT #NAME_" + identifier + " r=" + mConfiguration.get("portRadius"), ModuleWriter.Target.CONTROL_INPUT);
+            mModuleWriter.write("PORT #NAME_" + identifier + " r=" + mConfiguration.getDefaultPortRadius(), ModuleWriter.Target.CONTROL_INPUT);
             mModuleWriter.write("NODE #NAME_" + identifier, ModuleWriter.Target.CONTROL_INPUT_NODE);
         }
     }
@@ -152,13 +153,13 @@ public class LFRProcessor extends LFRBaseListener {
     public void exitControlPortDecl(LFRParser.ControlPortDeclContext ctx) {
         for (TerminalNode node : ctx.IDENTIFIER()) {
             String identifier = node.getText();
-            Component component = new Component(identifier, Component.Layer.CONTROL, 1);
+            Component component = new Component(identifier, Layer.CONTROL, 1);
             StatusCode code = mSymbolTable.put(component);
             if (code != StatusCode.SUCCESS) {
                 ErrorHandler.printErrorMessage(mFilename, node, ErrorCode.INVALID_IDENTIFIER);
                 updateStatus(code);
             }
-            mModuleWriter.write("PORT #NAME_" + identifier + " r=" + mConfiguration.get("portRadius"), ModuleWriter.Target.CONTROL_INPUT);
+            mModuleWriter.write("PORT #NAME_" + identifier + " r=" + mConfiguration.getDefaultPortRadius(), ModuleWriter.Target.CONTROL_INPUT);
             mModuleWriter.write("NODE #NAME_" + identifier, ModuleWriter.Target.CONTROL_INPUT_NODE);
         }
     }
@@ -167,7 +168,7 @@ public class LFRProcessor extends LFRBaseListener {
     public void enterNodeDecl(LFRParser.NodeDeclContext ctx) {
         for (TerminalNode node : ctx.IDENTIFIER()) {
             String identifier = node.getText();
-            Component component = new Component(identifier, Component.Layer.FLOW, 1);
+            Component component = new Component(identifier, Layer.FLOW, 1);
             StatusCode code = mSymbolTable.put(component);
             if (code != StatusCode.SUCCESS) {
                 ErrorHandler.printErrorMessage(mFilename, node, ErrorCode.INVALID_IDENTIFIER);
@@ -229,7 +230,7 @@ public class LFRProcessor extends LFRBaseListener {
                 }
                 channel.append(output);
             }
-            channel.append(" w=").append(mConfiguration.get("channelWidth"));
+            channel.append(" w=").append(mConfiguration.getDefaultChannelWidth());
             mModuleWriter.write(channel.toString(), ModuleWriter.Target.FLOW_CHANNEL);
         } else {
             if (exprOutputs.size() != assignTargets.size()) {
@@ -241,7 +242,7 @@ public class LFRProcessor extends LFRBaseListener {
                 String channel = "CHANNEL " + channelId;
                 channel += " from " + exprOutputs.get(i);
                 channel += " to " + assignTargets.get(i);
-                channel += " w=" + mConfiguration.get("channelWidth");
+                channel += " w=" + mConfiguration.getDefaultChannelWidth();
                 mModuleWriter.write(channel, ModuleWriter.Target.FLOW_CHANNEL);
             }
         }
@@ -265,12 +266,12 @@ public class LFRProcessor extends LFRBaseListener {
             }
             String valveIdentifier = mModuleNameGenerator.nextComponent();
             String valve = "VALVE " + valveIdentifier + " on " + channelId;
-            valve += " w=" + mConfiguration.get("valveWidth") + " l=" + mConfiguration.get("valveHeight");
+            valve += " w=" + mConfiguration.getDefaultValveWidth() + " l=" + mConfiguration.getDefaultValveLength();
             mModuleWriter.write(valve, ModuleWriter.Target.CONTROL_COMPONENT);
             String ctlChannel = "CHANNEL " + mModuleNameGenerator.nextChannel();
             ctlChannel += " from " + valveIdentifier + " 1";
             ctlChannel += " to " + ctl.getMINTIdentifier() + " " + ctlPort;
-            ctlChannel += " w=" + mConfiguration.get("channelWidth");
+            ctlChannel += " w=" + mConfiguration.getDefaultChannelWidth();
             mModuleWriter.write(ctlChannel, ModuleWriter.Target.CONTROL_CHANNEL);
         }
     }
@@ -332,16 +333,16 @@ public class LFRProcessor extends LFRBaseListener {
                 channel += " from " + module.getOutputPortMINT(portIndex).replaceAll("#NAME", instanceName);
                 channel += " to " + component.getMINTIdentifier() + " " + port;
             }
-            channel += " w=" + mConfiguration.get("channelWidth");
+            channel += " w=" + mConfiguration.getDefaultChannelWidth();
             mModuleWriter.write(channel, ModuleWriter.Target.FLOW_CHANNEL);
         }
-        String moduleFlow = mModules.get(moduleName).getModuleFlowMINT(instanceName);
-        String moduleControl = mModules.get(moduleName).getControlMINT(instanceName);
+        List<String> moduleFlow = mModules.get(moduleName).getModuleFlowMINT(instanceName);
+        List<String> moduleControl = mModules.get(moduleName).getControlMINT(instanceName);
         if (!moduleFlow.isEmpty()) {
-            mModuleWriter.write(moduleFlow, ModuleWriter.Target.FLOW_CHANNEL);
+            mModuleWriter.writeAll(moduleFlow, ModuleWriter.Target.FLOW_CHANNEL);
         }
         if (!moduleControl.isEmpty()) {
-            mModuleWriter.write(moduleControl, ModuleWriter.Target.FLOW_CHANNEL);
+            mModuleWriter.writeAll(moduleControl, ModuleWriter.Target.FLOW_CHANNEL);
         }
         mDeviceGraph.addEdge(mModule.getIdentifier(), moduleName);
     }
@@ -349,7 +350,7 @@ public class LFRProcessor extends LFRBaseListener {
     @Override
     public void exitValveStmt(LFRParser.ValveStmtContext ctx) {
         String valveIdentifier = ctx.IDENTIFIER(0).getText();
-        Component valveComponent = new Component(valveIdentifier, Component.Layer.CONTROL, 1);
+        Component valveComponent = new Component(valveIdentifier, Layer.CONTROL, 1);
         StatusCode status = mSymbolTable.put(valveComponent);
         if (status != StatusCode.SUCCESS) {
             ErrorHandler.printErrorMessage(mFilename, ctx.IDENTIFIER(0), ErrorCode.INVALID_IDENTIFIER);
@@ -411,69 +412,16 @@ public class LFRProcessor extends LFRBaseListener {
         String channel = "CHANNEL " + channelId;
         channel += " from " + start.getMINTIdentifier() + " " + startPort;
         channel += " to " + end.getMINTIdentifier() + " " + endPort;
-        channel += " w=" + mConfiguration.get("channelWidth");
+        channel += " w=" + mConfiguration.getDefaultChannelWidth();
         mModuleWriter.write(channel, ModuleWriter.Target.FLOW_CHANNEL);
         String valve = "VALVE " + valveIdentifier + " on " + channelId;
-        valve += " w=" + mConfiguration.get("valveWidth") + " l=" + mConfiguration.get("valveHeight");
+        valve += " w=" + mConfiguration.getDefaultValveWidth() + " l=" + mConfiguration.getDefaultValveLength();
         mModuleWriter.write(valve, ModuleWriter.Target.CONTROL_COMPONENT);
         String ctlChannel = "CHANNEL " + mModuleNameGenerator.nextChannel();
         ctlChannel += " from " + valveIdentifier + " 1";
         ctlChannel += " to " + ctl.getMINTIdentifier() + " " + ctlPort;
-        ctlChannel += " w=" + mConfiguration.get("channelWidth");
+        ctlChannel += " w=" + mConfiguration.getDefaultChannelWidth();
         mModuleWriter.write(ctlChannel, ModuleWriter.Target.CONTROL_CHANNEL);
-    }
-
-    @Override
-    public void exitExpr(LFRParser.ExprContext ctx) {
-        if (ctx.OPERATOR() == null) {
-            return;
-        }
-        String op = ctx.OPERATOR().getText();
-        Operator operator = (Operator) mSymbolTable.get(op, SymbolType.OPERATOR);
-        String operatorComponent = mModuleNameGenerator.nextComponent();
-        if (operator == null) {
-            ErrorHandler.printErrorMessage(mFilename, ctx.OPERATOR(), ErrorCode.INVALID_OPERATOR);
-            updateStatus(StatusCode.FAIL);
-            mExprStack.push(BaseSymbol.getErrorTerm());
-            return;
-        }
-        if (operator.getInputs() != 1 && operator.getInputs() != 2) {
-            ErrorHandler.printErrorMessage(mFilename, ctx.OPERATOR(), ErrorCode.NOT_BINARY_UNARY_OPERATOR);
-            updateStatus(StatusCode.FAIL);
-            mExprStack.push(BaseSymbol.getErrorTerm());
-            return;
-        }
-        if (operator.getInputs() == 2) {
-            String b = mExprStack.pop();
-            String a = mExprStack.pop();
-            mModuleWriter.write(operator.getMINT(operatorComponent), ModuleWriter.Target.FLOW_COMPONENT);
-            String channel;
-            channel = "CHANNEL " + mModuleNameGenerator.nextChannel();
-            channel += " from " + a;
-            channel += " to " + operatorComponent + " " + operator.getInputTerms().get(0);
-            channel += " w=" + mConfiguration.get("channelWidth");
-            mModuleWriter.write(channel, ModuleWriter.Target.FLOW_CHANNEL);
-            channel = "CHANNEL " + mModuleNameGenerator.nextChannel();
-            channel += " from " + b;
-            channel += " to " + operatorComponent + " " + operator.getInputTerms().get(1);
-            channel += " w=" + mConfiguration.get("channelWidth");
-            mModuleWriter.write(channel, ModuleWriter.Target.FLOW_CHANNEL);
-            for (int outputTerm : operator.getOutputTerms()) {
-                mExprStack.push(operatorComponent + " " + outputTerm);
-            }
-        } else {
-            String a = mExprStack.pop();
-            mModuleWriter.write(operator.getMINT(operatorComponent), ModuleWriter.Target.FLOW_COMPONENT);
-            String channel;
-            channel = "CHANNEL " + mModuleNameGenerator.nextChannel();
-            channel += " from " + a;
-            channel += " to " + operatorComponent + " " + operator.getInputTerms().get(0);
-            channel += " w=" + mConfiguration.get("channelWidth");
-            mModuleWriter.write(channel, ModuleWriter.Target.FLOW_CHANNEL);
-            for (int outputTerm : operator.getOutputTerms()) {
-                mExprStack.push(operatorComponent + " " + outputTerm);
-            }
-        }
     }
 
     @Override
@@ -521,7 +469,7 @@ public class LFRProcessor extends LFRBaseListener {
                 mExprStack.push(Component.getErrorTerm());
                 return;
             }
-            if (operator.getLayer().equals("flow")) {
+            if (operator.getLayer() == Layer.FLOW) {
                 String operatorComponent = mModuleNameGenerator.nextComponent();
                 mModuleWriter.write(operator.getMINT(operatorComponent), ModuleWriter.Target.FLOW_COMPONENT);
                 for (int i = 0; i < inputs.size(); ++i) {
@@ -531,7 +479,7 @@ public class LFRProcessor extends LFRBaseListener {
                     channelBuffer = "CHANNEL " + mModuleNameGenerator.nextChannel();
                     channelBuffer += " from " + input;
                     channelBuffer += " to " + operatorComponent + " " + operatorPortNumber;
-                    channelBuffer += " w=" + mConfiguration.get("channelWidth");
+                    channelBuffer += " w=" + mConfiguration.getDefaultChannelWidth();
                     mModuleWriter.write(channelBuffer, ModuleWriter.Target.FLOW_CHANNEL);
                 }
                 for (int outputTerm : operator.getOutputTerms()) {

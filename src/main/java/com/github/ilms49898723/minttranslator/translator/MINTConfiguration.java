@@ -1,52 +1,56 @@
 package com.github.ilms49898723.minttranslator.translator;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Set;
 
 /**
  * MINT Configuration.
  */
 public class MINTConfiguration {
-    private Map<String, String> mConfigurations;
+    private int mDefaultPortRadius;
+    private int mDefaultChannelWidth;
+    private int mDefaultValveWidth;
+    private int mDefaultValveLength;
 
     public MINTConfiguration() {
-        mConfigurations = new HashMap<>();
+        mDefaultPortRadius = 20;
+        mDefaultChannelWidth = 10;
+        mDefaultValveWidth = 15;
+        mDefaultValveLength = 30;
     }
 
-    public StatusCode copy(MINTConfiguration configuration) {
-        mConfigurations.putAll(configuration.mConfigurations);
+    public StatusCode put(String key, int value) {
+        switch (key) {
+            case "portRadius":
+                mDefaultPortRadius = value;
+                break;
+            case "channelWidth":
+                mDefaultChannelWidth = value;
+                break;
+            case "valveWidth":
+                mDefaultValveWidth = value;
+                break;
+            case "valveLength":
+                mDefaultValveLength = value;
+                break;
+            default:
+                return StatusCode.FAIL;
+        }
         return StatusCode.SUCCESS;
     }
 
-    public StatusCode put(String key, String value) {
-        if (mConfigurations.containsKey(key)) {
-            return StatusCode.FAIL;
-        } else {
-            mConfigurations.put(key, value);
-            return StatusCode.SUCCESS;
-        }
+    public int getDefaultPortRadius() {
+        return mDefaultPortRadius;
     }
 
-    public String get(String key) {
-        return mConfigurations.getOrDefault(key, null);
+    public int getDefaultChannelWidth() {
+        return mDefaultChannelWidth;
     }
 
-    public int getInt(String key) {
-        String value = mConfigurations.getOrDefault(key, "");
-        return Integer.parseInt(value);
+    public int getDefaultValveWidth() {
+        return mDefaultValveWidth;
     }
 
-    public double getDouble(String key) {
-        String value = mConfigurations.getOrDefault(key, "");
-        return Double.parseDouble(value);
-    }
-
-    public Set<String> keySet() {
-        return mConfigurations.keySet();
-    }
-
-    public boolean containsKey(String key) {
-        return mConfigurations.containsKey(key);
+    public int getDefaultValveLength() {
+        return mDefaultValveLength;
     }
 }

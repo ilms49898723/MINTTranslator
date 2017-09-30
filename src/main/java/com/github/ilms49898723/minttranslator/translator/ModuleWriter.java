@@ -42,6 +42,9 @@ public class ModuleWriter {
     }
 
     public void write(String data, Target target) {
+        if (data.isEmpty()) {
+            return;
+        }
         switch (target) {
             case FLOW_INPUT:
                 mFlowInputDecl.add(data);
@@ -76,54 +79,57 @@ public class ModuleWriter {
         }
     }
 
-    public String getFlowMINT(String name) {
-        StringBuilder stringBuilder = new StringBuilder();
+    public void writeAll(List<String> data, Target target) {
+        for (String mint : data) {
+            write(mint, target);
+        }
+    }
+
+    public List<String> getFlowMINT(String name) {
+        List<String> result = new ArrayList<>();
         for (String mint : mFlowInputDecl) {
-            stringBuilder.append(mint.replaceAll("#NAME", name)).append(";\n");
+            result.add(mint.replaceAll("#NAME", name));
         }
         for (String mint : mFlowOutputDecl) {
-            stringBuilder.append(mint.replaceAll("#NAME", name)).append(";\n");
+            result.add(mint.replaceAll("#NAME", name));
         }
         for (String mint : mFlowComponentDecl) {
-            stringBuilder.append(mint.replaceAll("#NAME", name)).append(";\n");
+            result.add(mint.replaceAll("#NAME", name));
         }
         for (String mint : mFlowChannelDecl) {
-            stringBuilder.append(mint.replaceAll("#NAME", name)).append(";\n");
+            result.add(mint.replaceAll("#NAME", name));
         }
-        return stringBuilder.toString();
+        return result;
     }
 
-    public String getModuleFlowMINT(String name) {
-        StringBuilder stringBuilder = new StringBuilder();
+    public List<String> getModuleFlowMINT(String name) {
+        List<String> result = new ArrayList<>();
         for (String mint : mFlowInputNodeDecl) {
-            stringBuilder.append(mint.replaceAll("#NAME", name)).append(";\n");
+            result.add(mint.replaceAll("#NAME", name));
         }
         for (String mint : mFlowOutputNodeDecl) {
-            stringBuilder.append(mint.replaceAll("#NAME", name)).append(";\n");
+            result.add(mint.replaceAll("#NAME", name));
         }
         for (String mint : mFlowComponentDecl) {
-            stringBuilder.append(mint.replaceAll("#NAME", name)).append(";\n");
+            result.add(mint.replaceAll("#NAME", name));
         }
         for (String mint : mFlowChannelDecl) {
-            stringBuilder.append(mint.replaceAll("#NAME", name)).append(";\n");
+            result.add(mint.replaceAll("#NAME", name));
         }
-        if (stringBuilder.length() > 0) {
-            stringBuilder.deleteCharAt(stringBuilder.length() - 1);
-        }
-        return stringBuilder.toString();
+        return result;
     }
 
-    public String getControlMINT(String name) {
-        StringBuilder stringBuilder = new StringBuilder();
+    public List<String> getControlMINT(String name) {
+        List<String> result = new ArrayList<>();
         for (String mint : mControlInputDecl) {
-            stringBuilder.append(mint.replaceAll("#NAME", name)).append(";\n");
+            result.add(mint.replaceAll("#NAME", name));
         }
         for (String mint : mControlComponentDecl) {
-            stringBuilder.append(mint.replaceAll("#NAME", name)).append(";\n");
+            result.add(mint.replaceAll("#NAME", name));
         }
         for (String mint : mControlChannelDecl) {
-            stringBuilder.append(mint.replaceAll("#NAME", name)).append(";\n");
+            result.add(mint.replaceAll("#NAME", name));
         }
-        return stringBuilder.toString();
+        return result;
     }
 }

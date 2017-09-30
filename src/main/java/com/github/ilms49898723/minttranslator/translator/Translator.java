@@ -97,13 +97,17 @@ public class Translator {
         }
         for (String module : modulesList) {
             if (!used.get(module)) {
-                String flow = mModules.get(module).getFlowMINT(module);
-                String control = mModules.get(module).getControlMINT(module);
+                List<String> flow = mModules.get(module).getFlowMINT(module);
+                List<String> control = mModules.get(module).getControlMINT(module);
                 if (!flow.isEmpty()) {
-                    mWriter.writeFlow(mModules.get(module).getFlowMINT(module));
+                    for (String mint : flow) {
+                        mWriter.writeFlow(mint + ";\n");
+                    }
                 }
                 if (!control.isEmpty()) {
-                    mWriter.writeControl(mModules.get(module).getControlMINT(module));
+                    for (String mint : control) {
+                        mWriter.writeControl(mint + ";\n");
+                    }
                 }
                 searchAndMark(module, used);
             }

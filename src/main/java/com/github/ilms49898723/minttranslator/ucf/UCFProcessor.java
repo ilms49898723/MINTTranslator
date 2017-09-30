@@ -12,7 +12,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -33,29 +32,25 @@ public class UCFProcessor {
         }
     }
 
-    public StatusCode setDefaults() {
-        return StatusCode.SUCCESS;
-    }
-
     public StatusCode parse() {
         StatusCode statusCode = StatusCode.SUCCESS;
         try (JsonReader jsonReader = Json.createReader(new FileInputStream(mFilename))) {
             JsonArray ucfArray = jsonReader.readArray();
             for (int i = 0; i < ucfArray.size(); ++i) {
                 JsonObject ucfObject = ucfArray.getJsonObject(i);
-                if (!ucfObject.containsKey("operator")) {
+                if (!ucfObject.containsKey("module")) {
                     System.err.println("In file " + mFilename);
-                    System.err.println("Invalid operator: a Json object without operator key.");
+                    System.err.println("Invalid module: a Json object without module key.");
                     System.err.println(ucfObject);
                     statusCode = StatusCode.FAIL;
                     continue;
                 }
-                String operator = ucfObject.getString("operator");
+                String operator = ucfObject.getString("module");
                 StatusCode code;
                 if (operator.equals("general information")) {
                     code = parseGeneralInformation(ucfObject);
                 } else {
-                    code = parseOperator(ucfObject);
+                    code = parseModule(ucfObject);
                 }
                 if (code != StatusCode.SUCCESS) {
                     statusCode = code;
@@ -73,27 +68,24 @@ public class UCFProcessor {
 
     private StatusCode parseGeneralInformation(JsonObject ucfObject) {
         for (String key : ucfObject.keySet()) {
-            if (key.equals("operator")) {
+            if (key.equals("module")) {
                 continue;
             }
             int value = ucfObject.getInt(key);
-            StatusCode statusCode = mConfiguration.put(key, String.valueOf(value));
+            StatusCode statusCode = mConfiguration.put(key, value);
             if (statusCode != StatusCode.SUCCESS) {
                 System.err.println("In file " + mFilename);
                 System.err.println("At General Information key: " + key);
-                System.err.println("Error occurred when recording configurations.");
+                System.err.println("Invalid key or values.");
                 return StatusCode.FAIL;
             }
         }
         return StatusCode.SUCCESS;
     }
 
-    private StatusCode parseOperator(JsonObject ucfObject) {
+    private StatusCode parseModule(JsonObject ucfObject) {
         String[] keysNeeded = {
-                "operator",
-                "name",
-                "inputs",
-                "outputs",
+                "module",
                 "inputTerms",
                 "outputTerms",
                 "mint",
@@ -102,32 +94,22 @@ public class UCFProcessor {
         for (String key : keysNeeded) {
             if (!ucfObject.containsKey(key)) {
                 System.err.println("In file " + mFilename);
-                System.err.println("At operator: " + ucfObject.getString("operator"));
-                System.err.println("Key " + key + " is necessary in an operator json Object.");
+                System.err.println("At operator: " + ucfObject.getString("module"));
+                System.err.println("Key " + key + " is necessary in a module json Object.");
                 return StatusCode.FAIL;
             }
         }
-        Operator operator = new Operator(ucfObject.getString("operator", ""));
-        Operator nameOperator = new Operator(ucfObject.getString("name", ""));
-        operator.setName(ucfObject.getString("name", ""));
-        operator.setInputs(ucfObject.getInt("inputs", 0));
-        operator.setOutputs(ucfObject.getInt("outputs", 0));
-        operator.setControlInputTerm(ucfObject.getInt("controlTerm", -1));
-        operator.setMINT(ucfObject.getString("mint", ""));
-        operator.setLayer(ucfObject.getString("layer", ""));
-        nameOperator.setName(ucfObject.getString("name", ""));
-        nameOperator.setInputs(ucfObject.getInt("inputs", 0));
-        nameOperator.setOutputs(ucfObject.getInt("outputs", 0));
-        nameOperator.setControlInputTerm(ucfObject.getInt("controlTerm", -1));
-        nameOperator.setMINT(ucfObject.getString("mint", ""));
-        nameOperator.setLayer(ucfObject.getString("layer", ""));
-        if (!operator.getLayer().equals("flow") && !operator.getLayer().equals("control")) {
+        if (!ucfObject.getString("layer").equals("flow")
+                && !ucfObject.getString("layer").equals("control")) {
             System.err.println("In file " + mFilename);
-            System.err.println("At operator " + operator.getName());
-            System.err.println("Invalid layer " + operator.getLayer());
+            System.err.println("At operator " + ucfObject.getString("name"));
+            System.err.println("Invalid layer " + ucfObject.getString("layer"));
             System.err.println("Should be either \'flow\' or \'control\'.");
             return StatusCode.FAIL;
         }
+        Operator operator = new Operator(ucfObject.getString("module"));
+        operator.setMINT(ucfObject.getString("mint"));
+        operator.setLayer(ucfObject.getString("layer"));
         List<Integer> inputTerms = new ArrayList<>();
         String[] inputTermTokens = ucfObject.getString("inputTerms").split("[ ,]");
         for (String term : inputTermTokens) {
@@ -137,7 +119,7 @@ public class UCFProcessor {
             inputTerms.add(Integer.parseInt(term));
         }
         operator.setInputTerms(inputTerms);
-        nameOperator.setInputTerms(inputTerms);
+        operator.setInputs(inputTerms.size());
         List<Integer> outputTerms = new ArrayList<>();
         String[] outputTermTokens = ucfObject.getString("outputTerms").split("[ ,]");
         for (String term : outputTermTokens) {
@@ -147,20 +129,12 @@ public class UCFProcessor {
             outputTerms.add(Integer.parseInt(term));
         }
         operator.setOutputTerms(outputTerms);
-        nameOperator.setOutputTerms(outputTerms);
+        operator.setOutputs(outputTerms.size());
         StatusCode code = mSymbolTable.put(operator);
         if (code != StatusCode.SUCCESS) {
             System.err.println("In file " + mFilename);
-            System.err.println("Operator " + operator.getIdentifier() + " is already defined.");
+            System.err.println("Module " + operator.getIdentifier() + " is already defined.");
             return StatusCode.FAIL;
-        }
-        if (!operator.getName().equals(operator.getIdentifier())) {
-            code = mSymbolTable.put(nameOperator);
-            if (code != StatusCode.SUCCESS) {
-                System.err.println("In file " + mFilename);
-                System.err.println("Operator " + nameOperator.getIdentifier() + " is already defined.");
-                return StatusCode.FAIL;
-            }
         }
         return StatusCode.SUCCESS;
     }

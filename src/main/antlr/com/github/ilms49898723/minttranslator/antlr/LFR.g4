@@ -62,9 +62,7 @@ valveStmt:
     ;
 
 expr:
-    expr OPERATOR expr
-    | '(' OPERATOR expr ')'
-    | '(' expr ')'
+    '(' expr ')'
     | primary
     ;
 
@@ -100,4 +98,4 @@ WHITESPACE:
     [ \t\r\n]+ -> skip;
 
 COMMENT:
-    '#' ~[\r\n]* -> skip;
+    '/' '/' ~[\r\n]* -> skip;

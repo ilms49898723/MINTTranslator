@@ -1,5 +1,7 @@
 package com.github.ilms49898723.minttranslator.symbols;
 
+import com.github.ilms49898723.minttranslator.symbols.info.Layer;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -13,7 +15,7 @@ public class Module extends BaseSymbol {
     private List<Integer> mOutputTerms;
 
     public Module(String identifier, int scope) {
-        super(identifier, SymbolType.MODULE, scope);
+        super(identifier, SymbolType.MODULE, scope, Layer.MODULE);
         mInputs = new ArrayList<>();
         mOutputs = new ArrayList<>();
         mInputTerms = new ArrayList<>();

@@ -65,7 +65,7 @@ public class LFRProcessor extends LFRBaseListener {
 
     @Override
     public void enterVerilogModules(LFRParser.VerilogModulesContext ctx) {
-        String identifier = ctx.IDENTIFIER().getText();
+        String identifier = ctx.IDENTIFIER(0).getText();
         mModuleNameGenerator = new ModuleNameGenerator(mConfiguration);
         mDeviceGraph.addVertex(identifier);
         mModuleWriter = new ModuleWriter();
@@ -73,13 +73,23 @@ public class LFRProcessor extends LFRBaseListener {
         mModule = new Module(identifier, 0);
         StatusCode code = mSymbolTable.put(mModule);
         if (code != StatusCode.SUCCESS) {
-            ErrorHandler.printErrorMessage(mFilename, ctx.IDENTIFIER(), ErrorCode.INVALID_IDENTIFIER);
+            ErrorHandler.printErrorMessage(mFilename, ctx.IDENTIFIER(0), ErrorCode.INVALID_IDENTIFIER);
             updateStatus(code);
         }
     }
 
     @Override
     public void exitVerilogModules(LFRParser.VerilogModulesContext ctx) {
+        Set<String> portIdentifiers = new HashSet<>();
+        for (int i = 1; i < ctx.IDENTIFIER().size(); ++i) {
+            portIdentifiers.add(ctx.IDENTIFIER(i).getText());
+        }
+        Set<String> modulePorts = new HashSet<>();
+        modulePorts.addAll(mModule.getInputs());
+        modulePorts.addAll(mModule.getOutputs());
+        if (!portIdentifiers.equals(modulePorts)) {
+            ErrorHandler.printErrorMessage(mFilename, ctx.IDENTIFIER(0), ErrorCode.PORT_NOT_LISTED);
+        }
         mSymbolTable.cleanup(0);
     }
 
@@ -118,39 +128,7 @@ public class LFRProcessor extends LFRBaseListener {
     }
 
     @Override
-    public void exitFlowPortDecl(LFRParser.FlowPortDeclContext ctx) {
-        for (TerminalNode node : ctx.IDENTIFIER()) {
-            String identifier = node.getText();
-            Component component = new Component(identifier, Layer.FLOW, 1);
-            StatusCode code = mSymbolTable.put(component);
-            if (code != StatusCode.SUCCESS) {
-                ErrorHandler.printErrorMessage(mFilename, node, ErrorCode.INVALID_IDENTIFIER);
-                updateStatus(code);
-            }
-            mModule.addOutput(identifier);
-            mModule.addOutputTerm(component.nextOutput());
-            mModuleWriter.write("PORT #NAME_" + identifier + " r=" + mConfiguration.getDefaultPortRadius(), ModuleWriter.Target.FLOW_COMPONENT);
-            mModuleWriter.write("NODE #NAME_" + identifier, ModuleWriter.Target.FLOW_COMPONENT);
-        }
-    }
-
-    @Override
     public void exitControlInputDecl(LFRParser.ControlInputDeclContext ctx) {
-        for (TerminalNode node : ctx.IDENTIFIER()) {
-            String identifier = node.getText();
-            Component component = new Component(identifier, Layer.CONTROL, 1);
-            StatusCode code = mSymbolTable.put(component);
-            if (code != StatusCode.SUCCESS) {
-                ErrorHandler.printErrorMessage(mFilename, node, ErrorCode.INVALID_IDENTIFIER);
-                updateStatus(code);
-            }
-            mModuleWriter.write("PORT #NAME_" + identifier + " r=" + mConfiguration.getDefaultPortRadius(), ModuleWriter.Target.CONTROL_INPUT);
-            mModuleWriter.write("NODE #NAME_" + identifier, ModuleWriter.Target.CONTROL_INPUT_NODE);
-        }
-    }
-
-    @Override
-    public void exitControlPortDecl(LFRParser.ControlPortDeclContext ctx) {
         for (TerminalNode node : ctx.IDENTIFIER()) {
             String identifier = node.getText();
             Component component = new Component(identifier, Layer.CONTROL, 1);
@@ -430,7 +408,7 @@ public class LFRProcessor extends LFRBaseListener {
         if (ctx.expr().isEmpty()) {
             Component component = (Component) mSymbolTable.get(ctx.IDENTIFIER().getText(), SymbolType.COMPONENT);
             if (component == null) {
-                ErrorHandler.printErrorMessage(mFilename, ctx.IDENTIFIER(), ErrorCode.INVALID_IDENTIFIER);
+                ErrorHandler.printErrorMessage(mFilename, ctx.IDENTIFIER(), ErrorCode.UNDEFINED_SYMBOL);
                 updateStatus(StatusCode.FAIL);
                 mExprStack.push(Component.getErrorTerm());
                 return;

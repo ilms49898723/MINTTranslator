@@ -66,6 +66,10 @@ public class ErrorHandler {
                 printHeader(filename, node);
                 System.err.println(node.getSymbol().getText() + ": control operator is not supported currently.");
                 break;
+            case PORT_NOT_LISTED:
+                printHeader(filename, node);
+                System.err.println(node.getSymbol().getText() + ": all input and output ports should be listed in \'()\' after module name.");
+                break;
         }
     }
 

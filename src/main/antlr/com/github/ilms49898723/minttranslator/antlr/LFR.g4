@@ -6,14 +6,13 @@ lfr:
 
 verilogModules:
     'module' IDENTIFIER '(' ')' ';' (verilogStmt)* 'endmodule'
+    | 'module' IDENTIFIER '(' IDENTIFIER (',' IDENTIFIER)* ')' ';' (verilogStmt)* 'endmodule'
     ;
 
 verilogStmt:
     flowInputDecl
     | flowOutputDecl
-    | flowPortDecl
     | controlInputDecl
-    | controlPortDecl
     | nodeDecl
     | assignStmt
     | instanceStmt
@@ -28,16 +27,8 @@ flowOutputDecl:
     'foutput' IDENTIFIER (',' IDENTIFIER)* ';'
     ;
 
-flowPortDecl:
-    'fport' IDENTIFIER (',' IDENTIFIER)* ';'
-    ;
-
 controlInputDecl:
     'cinput' IDENTIFIER (',' IDENTIFIER)* ';'
-    ;
-
-controlPortDecl:
-    'cport' IDENTIFIER (',' IDENTIFIER)* ';'
     ;
 
 nodeDecl:
@@ -76,9 +67,7 @@ RESERVED:
     | 'endmodule'
     | 'finput'
     | 'foutput'
-    | 'fport'
     | 'cinput'
-    | 'cport'
     | 'fnode'
     | 'assign'
     | 'with'

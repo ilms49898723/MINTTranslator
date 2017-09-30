@@ -318,10 +318,10 @@ public class LFRProcessor extends LFRBaseListener {
         List<String> moduleFlow = mModules.get(moduleName).getModuleFlowMINT(instanceName);
         List<String> moduleControl = mModules.get(moduleName).getControlMINT(instanceName);
         if (!moduleFlow.isEmpty()) {
-            mModuleWriter.writeAll(moduleFlow, ModuleWriter.Target.FLOW_CHANNEL);
+            mModuleWriter.writeAll(moduleFlow, ModuleWriter.Target.FLOW_COMPONENT);
         }
         if (!moduleControl.isEmpty()) {
-            mModuleWriter.writeAll(moduleControl, ModuleWriter.Target.FLOW_CHANNEL);
+            mModuleWriter.writeAll(moduleControl, ModuleWriter.Target.CONTROL_COMPONENT);
         }
         mDeviceGraph.addEdge(mModule.getIdentifier(), moduleName);
     }

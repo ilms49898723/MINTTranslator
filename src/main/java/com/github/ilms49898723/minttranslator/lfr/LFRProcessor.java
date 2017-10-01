@@ -457,7 +457,6 @@ public class LFRProcessor extends LFRBaseListener {
                 if (!mValveControllers.containsKey(ctlId)) {
                     ErrorHandler.printErrorMessage(mFilename, ctx.valvePhase().IDENTIFIER(), ErrorCode.UNDEFINED_SYMBOL);
                     updateStatus(StatusCode.FAIL);
-                    mExprStack.push(Component.getErrorTerm());
                     return;
                 }
                 String valveId = mComponentNameGenerator.nextComponent("valve");
@@ -483,24 +482,24 @@ public class LFRProcessor extends LFRBaseListener {
             mExprStack.push(output);
         } else {
             String operatorIdentifier = ctx.IDENTIFIER().getText();
-            List<String> inputs = new ArrayList<>();
-            for (int i = 0; i < ctx.expr().size(); ++i) {
-                inputs.add(mExprStack.pop());
-            }
-            Collections.reverse(inputs);
             Operator operator = (Operator) mSymbolTable.get(operatorIdentifier, SymbolType.OPERATOR);
             if (operator == null) {
                 ErrorHandler.printErrorMessage(mFilename, ctx.IDENTIFIER(), ErrorCode.INVALID_OPERATOR);
-                updateStatus(StatusCode.FAIL);
-                mExprStack.push(Component.getErrorTerm());
-                return;
+                System.exit(1);
             }
-            if (operator.getInputs() != inputs.size()) {
+            List<String> inputs = new ArrayList<>();
+            if (mExprStack.size() < operator.getInputs()) {
                 ErrorHandler.printErrorMessage(mFilename, ctx.IDENTIFIER(), ErrorCode.OPERATOR_INPUTS_NOT_MATCH);
                 updateStatus(StatusCode.FAIL);
-                mExprStack.push(Component.getErrorTerm());
+                for (int i = 0; i < operator.getOutputs(); ++i) {
+                    mExprStack.push(Component.getErrorTerm());
+                }
                 return;
             }
+            for (int i = 0; i < operator.getInputs(); ++i) {
+                inputs.add(mExprStack.pop());
+            }
+            Collections.reverse(inputs);
             if (operator.getLayer() == Layer.FLOW) {
                 String operatorComponent = mComponentNameGenerator.nextComponent(operator.getIdentifier());
                 mModuleWriter.write(operator.getMINT(operatorComponent), ModuleWriter.Target.FLOW_COMPONENT);
@@ -523,7 +522,9 @@ public class LFRProcessor extends LFRBaseListener {
                     if (!mValveControllers.containsKey(ctlId)) {
                         ErrorHandler.printErrorMessage(mFilename, ctx.valvePhase().IDENTIFIER(), ErrorCode.UNDEFINED_SYMBOL);
                         updateStatus(StatusCode.FAIL);
-                        mExprStack.push(Component.getErrorTerm());
+                        for (int i = 0; i < operator.getOutputs(); ++i) {
+                            mExprStack.push(Component.getErrorTerm());
+                        }
                         return;
                     }
                     for (int i = 0; i < outputs.size(); ++i) {
@@ -553,8 +554,7 @@ public class LFRProcessor extends LFRBaseListener {
                 }
             } else {
                 ErrorHandler.printErrorMessage(mFilename, ctx.IDENTIFIER(), ErrorCode.CONTROL_OPERATOR_NOT_SUPPORT);
-                updateStatus(StatusCode.FAIL);
-                mExprStack.push(Component.getErrorTerm());
+                System.exit(1);
             }
         }
     }

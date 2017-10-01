@@ -36,11 +36,11 @@ nodeDecl:
     ;
 
 assignStmt:
-    'assign' valvePhase IDENTIFIER (',' IDENTIFIER)* '=' expr ';'
+    'assign' assignTarget (',' assignTarget)* '=' expr ';'
     ;
 
-valvePhase:
-    ('valve' '(' IDENTIFIER ')' 'on')?
+assignTarget:
+    IDENTIFIER valvePhase
     ;
 
 instanceStmt:
@@ -48,8 +48,8 @@ instanceStmt:
     ;
 
 valveStmt:
-    'valve' IDENTIFIER '(' IDENTIFIER ',' IDENTIFIER ',' IDENTIFIER ')' ';'
-    | 'valve' IDENTIFIER '(' '.src' '(' IDENTIFIER ')' ',' '.dst' '(' IDENTIFIER ')' ',' '.ctl' '(' IDENTIFIER ')' ')' ';'
+    'valve' '(' IDENTIFIER ',' IDENTIFIER ',' IDENTIFIER ')' ';'
+    | 'valve' '(' '.src' '(' IDENTIFIER ')' ',' '.dst' '(' IDENTIFIER ')' ',' '.ctl' '(' IDENTIFIER ')' ')' ';'
     ;
 
 expr:
@@ -58,8 +58,12 @@ expr:
     ;
 
 primary:
-    IDENTIFIER '(' expr (',' expr)* ')'
-    | IDENTIFIER
+    IDENTIFIER '(' expr (',' expr)* ')' valvePhase
+    | IDENTIFIER valvePhase
+    ;
+
+valvePhase:
+    ('%' IDENTIFIER)?
     ;
 
 RESERVED:
@@ -70,7 +74,6 @@ RESERVED:
     | 'cinput'
     | 'fnode'
     | 'assign'
-    | 'with'
     | 'valve'
     ;
 

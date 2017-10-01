@@ -73,6 +73,7 @@ public class LFRProcessor extends LFRBaseListener {
         mModuleWriter = new ModuleWriter();
         mModules.put(identifier, mModuleWriter);
         mModule = new Module(identifier, 0);
+        mValveControllers = new HashMap<>();
         StatusCode code = mSymbolTable.put(mModule);
         if (code != StatusCode.SUCCESS) {
             ErrorHandler.printErrorMessage(mFilename, ctx.IDENTIFIER(0), ErrorCode.INVALID_IDENTIFIER);
@@ -258,9 +259,20 @@ public class LFRProcessor extends LFRBaseListener {
         }
         List<String> modulePorts = new ArrayList<>();
         List<String> wires = new ArrayList<>();
-        for (int i = 2; i < ctx.IDENTIFIER().size(); i += 2) {
+        List<String> valveControls = new ArrayList<>();
+        for (int i = 2, j = 0; i < ctx.IDENTIFIER().size(); i += 2, ++j) {
             modulePorts.add(ctx.IDENTIFIER(i).getText());
             wires.add(ctx.IDENTIFIER(i + 1).getText());
+            if (ctx.valvePhase(j).IDENTIFIER() != null) {
+                valveControls.add(ctx.valvePhase(j).IDENTIFIER().getText());
+                if (!mValveControllers.containsKey(valveControls.get(j))) {
+                    ErrorHandler.printErrorMessage(mFilename, ctx.valvePhase(j).IDENTIFIER(), ErrorCode.UNDEFINED_SYMBOL);
+                    updateStatus(StatusCode.FAIL);
+                    return;
+                }
+            } else {
+                valveControls.add(null);
+            }
         }
         for (int i = 0; i < modulePorts.size(); ++i) {
             if (!module.getInputs().contains(modulePorts.get(i)) &&
@@ -287,7 +299,8 @@ public class LFRProcessor extends LFRBaseListener {
                 updateStatus(StatusCode.FAIL);
                 return;
             }
-            String channel = "CHANNEL " + mComponentNameGenerator.nextChannel();
+            String channelId = mComponentNameGenerator.nextChannel();
+            String channel = "CHANNEL " + channelId;
             if (module.getInputs().contains(modulePorts.get(i))) {
                 int portIndex = module.getInputs().indexOf(modulePorts.get(i));
                 channel += " from " + component.getMINTIdentifier() + " " + port;
@@ -299,6 +312,18 @@ public class LFRProcessor extends LFRBaseListener {
             }
             channel += " w=" + mConfiguration.getDefaultChannelWidth();
             mModuleWriter.write(channel, ModuleWriter.Target.FLOW_CHANNEL);
+            if (valveControls.get(i) != null) {
+                String valveId = mComponentNameGenerator.nextComponent("valve");
+                String valve = "VALVE " + valveId + " on " + channelId;
+                valve += " w=" + mConfiguration.getDefaultValveWidth() + " l=" + mConfiguration.getDefaultValveLength();
+                mModuleWriter.write(valve, ModuleWriter.Target.CONTROL_COMPONENT);
+                String ctlChannel = "CHANNEL " + mComponentNameGenerator.nextChannel();
+                ctlChannel += " from " + valveId + " 1";
+                ctlChannel += " to " + mValveControllers.get(valveControls.get(i));
+                ctlChannel += " w=" + mConfiguration.getDefaultChannelWidth();
+                mModuleWriter.write(ctlChannel, ModuleWriter.Target.CONTROL_CHANNEL);
+                mValveControllers.put(valveControls.get(i), valveId + " 2");
+            }
         }
         List<String> moduleFlow = mModules.get(moduleName).getModuleFlowMINT(instanceName);
         List<String> moduleControl = mModules.get(moduleName).getControlMINT(instanceName);

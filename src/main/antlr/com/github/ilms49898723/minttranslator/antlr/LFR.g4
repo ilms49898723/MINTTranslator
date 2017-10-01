@@ -44,7 +44,7 @@ assignTarget:
     ;
 
 instanceStmt:
-    IDENTIFIER IDENTIFIER '(' '.' IDENTIFIER '(' IDENTIFIER ')' (',' '.' IDENTIFIER '(' IDENTIFIER ')')* ')' ';'
+    IDENTIFIER IDENTIFIER '(' '.' IDENTIFIER '(' IDENTIFIER valvePhase ')' (',' '.' IDENTIFIER '(' IDENTIFIER valvePhase ')')* ')' ';'
     ;
 
 valveStmt:

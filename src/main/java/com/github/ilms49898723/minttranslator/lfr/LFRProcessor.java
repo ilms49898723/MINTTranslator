@@ -213,29 +213,62 @@ public class LFRProcessor extends LFRBaseListener {
             exprOutputs.add(mExprStack.pop());
         }
         Collections.reverse(exprOutputs);
-        if (exprOutputs.size() != assignTargets.size()) {
-            ErrorHandler.printErrorMessage(mFilename, ctx.assignTarget(0).IDENTIFIER(), ErrorCode.ASSIGN_PORTS_NOT_MATCH);
-            updateStatus(StatusCode.FAIL);
-            return;
-        }
-        for (int i = 0; i < assignTargets.size(); ++i) {
-            String channelId = mComponentNameGenerator.nextChannel();
-            String channel = "CHANNEL " + channelId;
-            channel += " from " + exprOutputs.get(i);
-            channel += " to " + assignTargets.get(i);
-            channel += " w=" + mConfiguration.getDefaultChannelWidth();
-            mModuleWriter.write(channel, ModuleWriter.Target.FLOW_CHANNEL);
-            if (assignValves.get(i) != null) {
-                String valveIdentifier = mComponentNameGenerator.nextComponent("valve");
-                String valve = "VALVE " + valveIdentifier + " on " + channelId;
-                valve += " w=" + mConfiguration.getDefaultValveWidth() + " l=" + mConfiguration.getDefaultValveLength();
-                mModuleWriter.write(valve, ModuleWriter.Target.CONTROL_COMPONENT);
-                String ctlChannel = "CHANNEL " + mComponentNameGenerator.nextChannel();
-                ctlChannel += " from " + valveIdentifier + " 1";
-                ctlChannel += " to " + mValveControllers.get(assignValves.get(i));
-                ctlChannel += " w=" + mConfiguration.getDefaultChannelWidth();
-                mModuleWriter.write(ctlChannel, ModuleWriter.Target.CONTROL_CHANNEL);
-                mValveControllers.put(assignValves.get(i), valveIdentifier + " 2");
+        if (exprOutputs.size() == 1 && exprOutputs.size() != assignTargets.size()) {
+            String currentNode = exprOutputs.get(0);
+            for (int i = 0; i < assignTargets.size(); ++i) {
+                String newNodeId = mComponentNameGenerator.nextComponent("node");
+                mModuleWriter.write("NODE " + newNodeId, ModuleWriter.Target.FLOW_COMPONENT);
+                String nextChannelId = mComponentNameGenerator.nextChannel();
+                String nextChannel = "CHANNEL " + nextChannelId;
+                nextChannel += " from " + currentNode;
+                nextChannel += " to " + newNodeId + " 1";
+                nextChannel += " w=" + mConfiguration.getDefaultChannelWidth();
+                mModuleWriter.write(nextChannel, ModuleWriter.Target.FLOW_CHANNEL);
+                currentNode = newNodeId + " 3";
+                String channelId = mComponentNameGenerator.nextChannel();
+                String channel = "CHANNEL " + channelId;
+                channel += " from " + newNodeId + " 2";
+                channel += " to " + assignTargets.get(i);
+                channel += " w=" + mConfiguration.getDefaultChannelWidth();
+                mModuleWriter.write(channel, ModuleWriter.Target.FLOW_CHANNEL);
+                if (assignValves.get(i) != null) {
+                    String valveIdentifier = mComponentNameGenerator.nextComponent("valve");
+                    String valve = "VALVE " + valveIdentifier + " on " + channelId;
+                    valve += " w=" + mConfiguration.getDefaultValveWidth() + " l=" + mConfiguration.getDefaultValveLength();
+                    mModuleWriter.write(valve, ModuleWriter.Target.CONTROL_COMPONENT);
+                    String ctlChannel = "CHANNEL " + mComponentNameGenerator.nextChannel();
+                    ctlChannel += " from " + valveIdentifier + " 1";
+                    ctlChannel += " to " + mValveControllers.get(assignValves.get(i));
+                    ctlChannel += " w=" + mConfiguration.getDefaultChannelWidth();
+                    mModuleWriter.write(ctlChannel, ModuleWriter.Target.CONTROL_CHANNEL);
+                    mValveControllers.put(assignValves.get(i), valveIdentifier + " 2");
+                }
+            }
+        } else {
+            if (exprOutputs.size() != assignTargets.size()) {
+                ErrorHandler.printErrorMessage(mFilename, ctx.assignTarget(0).IDENTIFIER(), ErrorCode.ASSIGN_PORTS_NOT_MATCH);
+                updateStatus(StatusCode.FAIL);
+                return;
+            }
+            for (int i = 0; i < assignTargets.size(); ++i) {
+                String channelId = mComponentNameGenerator.nextChannel();
+                String channel = "CHANNEL " + channelId;
+                channel += " from " + exprOutputs.get(i);
+                channel += " to " + assignTargets.get(i);
+                channel += " w=" + mConfiguration.getDefaultChannelWidth();
+                mModuleWriter.write(channel, ModuleWriter.Target.FLOW_CHANNEL);
+                if (assignValves.get(i) != null) {
+                    String valveIdentifier = mComponentNameGenerator.nextComponent("valve");
+                    String valve = "VALVE " + valveIdentifier + " on " + channelId;
+                    valve += " w=" + mConfiguration.getDefaultValveWidth() + " l=" + mConfiguration.getDefaultValveLength();
+                    mModuleWriter.write(valve, ModuleWriter.Target.CONTROL_COMPONENT);
+                    String ctlChannel = "CHANNEL " + mComponentNameGenerator.nextChannel();
+                    ctlChannel += " from " + valveIdentifier + " 1";
+                    ctlChannel += " to " + mValveControllers.get(assignValves.get(i));
+                    ctlChannel += " w=" + mConfiguration.getDefaultChannelWidth();
+                    mModuleWriter.write(ctlChannel, ModuleWriter.Target.CONTROL_CHANNEL);
+                    mValveControllers.put(assignValves.get(i), valveIdentifier + " 2");
+                }
             }
         }
     }

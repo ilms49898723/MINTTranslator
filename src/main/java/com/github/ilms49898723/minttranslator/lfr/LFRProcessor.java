@@ -404,6 +404,7 @@ public class LFRProcessor extends LFRBaseListener {
                 }
                 String valveId = mComponentNameGenerator.nextComponent("valve");
                 String nodeId = mComponentNameGenerator.nextComponent("node");
+                mModuleWriter.write("NODE " + nodeId, ModuleWriter.Target.FLOW_COMPONENT);
                 String channelId = mComponentNameGenerator.nextChannel();
                 String channel = "CHANNEL " + channelId;
                 channel += " from " + output;
@@ -470,6 +471,7 @@ public class LFRProcessor extends LFRBaseListener {
                     for (int i = 0; i < outputs.size(); ++i) {
                         String valveId = mComponentNameGenerator.nextComponent("valve");
                         String nodeId = mComponentNameGenerator.nextComponent("node");
+                        mModuleWriter.write("NODE " + nodeId, ModuleWriter.Target.FLOW_COMPONENT);
                         String channelId = mComponentNameGenerator.nextChannel();
                         String channel = "CHANNEL " + channelId;
                         channel += " from " + outputs.get(i);

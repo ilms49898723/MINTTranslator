@@ -1,7 +1,5 @@
 package com.github.ilms49898723.minttranslator.translator;
 
-import java.util.Set;
-
 /**
  * MINT Configuration.
  */

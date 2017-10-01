@@ -21,7 +21,7 @@ public class LFRProcessor extends LFRBaseListener {
     private MINTConfiguration mConfiguration;
     private StatusCode mFinalStatus;
     private DeviceGraph mDeviceGraph;
-    private ModuleNameGenerator mModuleNameGenerator;
+    private ComponentNameGenerator mComponentNameGenerator;
     private ModuleWriter mModuleWriter;
     private Module mModule;
     private String mFilename;
@@ -66,7 +66,7 @@ public class LFRProcessor extends LFRBaseListener {
     @Override
     public void enterVerilogModules(LFRParser.VerilogModulesContext ctx) {
         String identifier = ctx.IDENTIFIER(0).getText();
-        mModuleNameGenerator = new ModuleNameGenerator(mConfiguration);
+        mComponentNameGenerator = new ComponentNameGenerator();
         mDeviceGraph.addVertex(identifier);
         mModuleWriter = new ModuleWriter();
         mModules.put(identifier, mModuleWriter);
@@ -194,7 +194,7 @@ public class LFRProcessor extends LFRBaseListener {
             exprOutputs.add(mExprStack.pop());
         }
         Collections.reverse(exprOutputs);
-        String channelId = mModuleNameGenerator.nextChannel();
+        String channelId = mComponentNameGenerator.nextChannel();
         if (exprOutputs.size() == 1) {
             StringBuilder channel = new StringBuilder();
             channel.append("CHANNEL ").append(channelId);
@@ -242,11 +242,11 @@ public class LFRProcessor extends LFRBaseListener {
                 updateStatus(StatusCode.FAIL);
                 return;
             }
-            String valveIdentifier = mModuleNameGenerator.nextComponent();
+            String valveIdentifier = mComponentNameGenerator.nextComponent("valve");
             String valve = "VALVE " + valveIdentifier + " on " + channelId;
             valve += " w=" + mConfiguration.getDefaultValveWidth() + " l=" + mConfiguration.getDefaultValveLength();
             mModuleWriter.write(valve, ModuleWriter.Target.CONTROL_COMPONENT);
-            String ctlChannel = "CHANNEL " + mModuleNameGenerator.nextChannel();
+            String ctlChannel = "CHANNEL " + mComponentNameGenerator.nextChannel();
             ctlChannel += " from " + valveIdentifier + " 1";
             ctlChannel += " to " + ctl.getMINTIdentifier() + " " + ctlPort;
             ctlChannel += " w=" + mConfiguration.getDefaultChannelWidth();
@@ -302,7 +302,7 @@ public class LFRProcessor extends LFRBaseListener {
                 updateStatus(StatusCode.FAIL);
                 return;
             }
-            String channel = "CHANNEL " + mModuleNameGenerator.nextChannel();
+            String channel = "CHANNEL " + mComponentNameGenerator.nextChannel();
             if (module.getInputs().contains(modulePorts.get(i))) {
                 int portIndex = module.getInputs().indexOf(modulePorts.get(i));
                 channel += " from " + component.getMINTIdentifier() + " " + port;
@@ -387,7 +387,7 @@ public class LFRProcessor extends LFRBaseListener {
             updateStatus(StatusCode.FAIL);
             return;
         }
-        String channelId = mModuleNameGenerator.nextChannel();
+        String channelId = mComponentNameGenerator.nextChannel();
         String channel = "CHANNEL " + channelId;
         channel += " from " + start.getMINTIdentifier() + " " + startPort;
         channel += " to " + end.getMINTIdentifier() + " " + endPort;
@@ -396,7 +396,7 @@ public class LFRProcessor extends LFRBaseListener {
         String valve = "VALVE " + valveIdentifier + " on " + channelId;
         valve += " w=" + mConfiguration.getDefaultValveWidth() + " l=" + mConfiguration.getDefaultValveLength();
         mModuleWriter.write(valve, ModuleWriter.Target.CONTROL_COMPONENT);
-        String ctlChannel = "CHANNEL " + mModuleNameGenerator.nextChannel();
+        String ctlChannel = "CHANNEL " + mComponentNameGenerator.nextChannel();
         ctlChannel += " from " + valveIdentifier + " 1";
         ctlChannel += " to " + ctl.getMINTIdentifier() + " " + ctlPort;
         ctlChannel += " w=" + mConfiguration.getDefaultChannelWidth();
@@ -449,13 +449,13 @@ public class LFRProcessor extends LFRBaseListener {
                 return;
             }
             if (operator.getLayer() == Layer.FLOW) {
-                String operatorComponent = mModuleNameGenerator.nextComponent();
+                String operatorComponent = mComponentNameGenerator.nextComponent(operator.getIdentifier());
                 mModuleWriter.write(operator.getMINT(operatorComponent), ModuleWriter.Target.FLOW_COMPONENT);
                 for (int i = 0; i < inputs.size(); ++i) {
                     String input = inputs.get(i);
                     int operatorPortNumber = operator.getInputTerms().get(i);
                     String channelBuffer;
-                    channelBuffer = "CHANNEL " + mModuleNameGenerator.nextChannel();
+                    channelBuffer = "CHANNEL " + mComponentNameGenerator.nextChannel();
                     channelBuffer += " from " + input;
                     channelBuffer += " to " + operatorComponent + " " + operatorPortNumber;
                     channelBuffer += " w=" + mConfiguration.getDefaultChannelWidth();

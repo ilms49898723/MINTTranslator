@@ -61,11 +61,11 @@ public class Operator extends BaseSymbol {
     @Override
     public String toString() {
         return "Operator{" +
-               ", mMINT='" + mMINT + '\'' +
-               ", mInputs=" + mInputs +
-               ", mOutputs=" + mOutputs +
-               ", mInputTerms=" + mInputTerms +
-               ", mOutputTerms=" + mOutputTerms +
-               '}';
+                ", mMINT='" + mMINT + '\'' +
+                ", mInputs=" + mInputs +
+                ", mOutputs=" + mOutputs +
+                ", mInputTerms=" + mInputTerms +
+                ", mOutputTerms=" + mOutputTerms +
+                '}';
     }
 }

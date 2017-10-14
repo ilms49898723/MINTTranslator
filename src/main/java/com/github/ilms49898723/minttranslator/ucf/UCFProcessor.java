@@ -63,6 +63,8 @@ public class UCFProcessor {
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
+        Operator node = new Operator("node");
+        mSymbolTable.put(node);
         return statusCode;
     }
 

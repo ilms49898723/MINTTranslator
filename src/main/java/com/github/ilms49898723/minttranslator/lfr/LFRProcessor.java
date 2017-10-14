@@ -482,6 +482,60 @@ public class LFRProcessor extends LFRBaseListener {
             mExprStack.push(output);
         } else {
             String operatorIdentifier = ctx.IDENTIFIER().getText();
+            if (operatorIdentifier.equals("node")) {
+                if (ctx.expr().size() >= 4 || mExprStack.size() < ctx.expr().size()) {
+                    ErrorHandler.printErrorMessage(mFilename, ctx.IDENTIFIER(), ErrorCode.OPERATOR_INPUTS_NOT_MATCH);
+                    updateStatus(StatusCode.FAIL);
+                    mExprStack.push(Component.getErrorTerm());
+                    return;
+                }
+                List<String> nodeInputs = new ArrayList<>();
+                for (int i = 0; i < ctx.expr().size(); ++i) {
+                    nodeInputs.add(mExprStack.pop());
+                }
+                Collections.reverse(nodeInputs);
+                String nodeComponent = mComponentNameGenerator.nextComponent("node");
+                mModuleWriter.write("NODE " + nodeComponent, ModuleWriter.Target.FLOW_COMPONENT);
+                for (int i = 0; i < ctx.expr().size(); ++i) {
+                    String channelBuffer;
+                    channelBuffer = "CHANNEL " + mComponentNameGenerator.nextChannel();
+                    channelBuffer += " from " + nodeInputs.get(i);
+                    channelBuffer += " to " + nodeComponent + " " + (i + 1);
+                    channelBuffer += " w=" + mConfiguration.getDefaultChannelWidth();
+                    mModuleWriter.write(channelBuffer, ModuleWriter.Target.FLOW_CHANNEL);
+                }
+                String outputTerm = nodeComponent + " " + (ctx.expr().size() + 1);
+                if (ctx.valvePhase().IDENTIFIER() != null) {
+                    String ctlId = ctx.valvePhase().IDENTIFIER().getText();
+                    if (!mValveControllers.containsKey(ctlId)) {
+                        ErrorHandler.printErrorMessage(mFilename, ctx.valvePhase().IDENTIFIER(), ErrorCode.UNDEFINED_SYMBOL);
+                        updateStatus(StatusCode.FAIL);
+                        mExprStack.push(Component.getErrorTerm());
+                        return;
+                    }
+                    String valveId = mComponentNameGenerator.nextComponent("valve");
+                    String nodeId = mComponentNameGenerator.nextComponent("node");
+                    mModuleWriter.write("NODE " + nodeId, ModuleWriter.Target.FLOW_COMPONENT);
+                    String channelId = mComponentNameGenerator.nextChannel();
+                    String channel = "CHANNEL " + channelId;
+                    channel += " from " + outputTerm;
+                    channel += " to " + nodeId + " 1";
+                    channel += " w=" + mConfiguration.getDefaultChannelWidth();
+                    mModuleWriter.write(channel, ModuleWriter.Target.FLOW_CHANNEL);
+                    String valve = "VALVE " + valveId + " on " + channelId;
+                    valve += " w=" + mConfiguration.getDefaultValveWidth() + " l=" + mConfiguration.getDefaultValveLength();
+                    mModuleWriter.write(valve, ModuleWriter.Target.CONTROL_COMPONENT);
+                    String ctlChannel = "CHANNEL " + mComponentNameGenerator.nextChannel();
+                    ctlChannel += " from " + valveId + " 1";
+                    ctlChannel += " to " + mValveControllers.get(ctlId);
+                    ctlChannel += " w=" + mConfiguration.getDefaultChannelWidth();
+                    mModuleWriter.write(ctlChannel, ModuleWriter.Target.CONTROL_CHANNEL);
+                    mValveControllers.put(ctlId, valveId + " 2");
+                    outputTerm = nodeId + " 2";
+                }
+                mExprStack.push(outputTerm);
+                return;
+            }
             Operator operator = (Operator) mSymbolTable.get(operatorIdentifier, SymbolType.OPERATOR);
             if (operator == null) {
                 ErrorHandler.printErrorMessage(mFilename, ctx.IDENTIFIER(), ErrorCode.INVALID_OPERATOR);
